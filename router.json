@@ -1,0 +1,29 @@
+{
+    "routes": [
+        {
+            "path": "/healthcheck",
+            "method": "post",
+            "controller": "healthcheck.js"
+        },
+        {
+            "path": "/app_state",
+            "method": "get",
+            "controller": "app_state"
+        },
+        {
+            "path": "/query",
+            "method": "post",
+            "controller": "query.js"
+        },
+        {
+            "path": "/query-post",
+            "method": "post",
+            "controller": "query-post.js"
+        },
+        {
+            "path": "/",
+            "method": "get",
+            "controller": "html.js"
+        }
+    ]
+}

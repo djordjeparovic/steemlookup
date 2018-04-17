@@ -1,0 +1,86 @@
+{
+    "apps": [
+        {
+            "name": "steemlookup.com",
+            "script": "server.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        },
+        {
+            "name": "posts-refresher-0-60",
+            "script": "posts_refresher.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "MINUTES_START": 1,
+                "MINUTES_END": 60,
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        },
+        {
+            "name": "posts-refresher-60-150",
+            "script": "posts_refresher.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "MINUTES_START": 60,
+                "MINUTES_END": 150,
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        },
+        {
+            "name": "posts-refresher-150-300",
+            "script": "posts_refresher.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "MINUTES_START": 150,
+                "MINUTES_END": 300,
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        },
+        {
+            "name": "posts-refresher-300-600",
+            "script": "posts_refresher.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "MINUTES_START": 300,
+                "MINUTES_END": 600,
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        },
+        {
+            "name": "posts-refresher-600-1200",
+            "script": "posts_refresher.js",
+            "cwd": "/Users/djole/steemlookup",
+            "watch": false,
+            "instances": 1,
+            "env": {
+                "NODE_ENV": "dev",
+                "MINUTES_START": 600,
+                "MINUTES_END": 1200,
+                "PSQL_HOST": "127.0.0.1",
+                "PSQL_PASS": "psql-pass"
+            }
+        }
+    ]
+}

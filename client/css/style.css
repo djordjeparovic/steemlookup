@@ -1,0 +1,924 @@
+
+
+/*
+ * -- BASE STYLES --
+ * Most of these are inherited from Base, but I want to change a few.
+ */
+ body {
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+    color: #70ef9b;
+}
+
+label {
+    color: rgb(189, 185, 185);
+    /* color: white; */
+}
+
+legend {
+    color: white !important;
+}
+
+input {
+    height: 32px !important;
+    height: 27px;
+    background-color: #252527;
+    border-color: rgb(109, 109, 109) !important;
+    box-shadow: inset 0 1px 3px rgb(109, 109, 109) !important;
+    color: rgb(229, 228, 232);
+    width: 100%;
+}
+
+input#mackbot {
+    width: 5%;
+    position: relative;
+    top: 6px;
+}
+
+select {
+    background-color: #252527 !important;
+    border-color: rgb(109, 109, 109) !important;
+    box-shadow: inset 0 1px 3px rgb(109, 109, 109);
+    color: rgb(229, 228, 232);
+    width: 80%;
+    height: 27px !important;
+}
+
+option {
+    background: #202020;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.red {
+    color: red;
+}
+
+.w-45 {
+    width: 45%;
+}
+
+.error {
+    padding: 10px;
+    padding-left: 30px;
+    background-color: red;
+    /* border-radius: 12px;
+    position: fixed;
+    top: 50%;
+    background: red;
+    z-index: 9000000;
+    width: 80%;
+    word-break: break-all;
+    padding: 10px;
+    left: 10%;
+    text-align: center; */
+}
+
+.queryAccessCodeInput {
+    border-radius: 11px;
+    width: 40%;
+    text-align: center;
+}
+
+.welcome-message {
+    border-radius: 12px;
+    position: fixed;
+    top: 20%;
+    background: rgb(16, 71, 23);
+    color: #40c365;
+    z-index: 9000000;
+    width: 70%;
+    word-break: break-all;
+    padding: 10px;
+    left: 10%;
+    text-align: center;
+}
+
+.submitAccessToken {
+    background: #252527;
+    border-radius: 7px;
+    width: 90px;
+    height: 30px;
+}
+
+.u-gray {
+    color: #0d0d25 !important;
+}
+
+.vanish {
+    z-index: -1 !important;
+}
+
+.vdatetime, .vdatetime-input {
+    width: 95%;
+}
+
+table {
+    width: 100%;
+}
+
+/* Icons */
+.icon-item {
+    width: 21px;
+    margin-bottom: -5px;
+}
+
+/* End of icons */
+
+/* tr:nth-child(even) {background: #F00} */
+tr:nth-child(odd) {background: #323235}
+
+
+.post-note {
+    position: relative;
+    left: 240px;
+    bottom: 23px;
+    font-size: small;
+    color: #252527;
+}
+
+.email-item:hover .post-note {
+    color: #d1d1d1;
+}
+
+.post-note-active {
+    font-size: initial;
+    left: 220px;
+    bottom: 18px;
+    color: red;
+}
+
+.email-item:hover .post-note-active {
+    color: red;
+    font-size: initial;
+}
+
+.custom-radio-buttons {
+    position: relative;
+    top: -10px;
+    width: 95%;
+    display: inline-flex;
+}
+
+.custom-radio-flex-input {
+    position: relative;
+    top: 15px;
+}
+
+/*
+ * -- HELPER STYLES --
+ * Over-riding some of the .pure-button styles to make my buttons look unique
+ */
+.primary-button,
+.secondary-button {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border-radius: 20px;
+}
+.primary-button {
+    color: #fff;
+    background: #70ef9b;
+    margin: 1em 0;
+}
+.secondary-button {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #666;
+    padding: 0.5em 2em;
+    font-size: 80%;
+}
+
+/*
+ * -- LAYOUT STYLES --
+ * This layout consists of three main elements, `#nav` (navigation bar), `#list` (email list), and `#main` (email content). All 3 elements are within `#layout`
+ */
+#layout, #nav, #list, #main {
+    margin: 0;
+    padding: 0;
+}
+
+.pure-menu-list {
+    text-align: left;
+}
+
+.remove-search {
+    float: right;
+}
+/* Make the navigation 100% width on phones */
+#nav {
+    width: 100%;
+    height: 40px;
+    position: relative;
+    background: #252527; /* #434451; rgb(37, 42, 58); */
+    text-align: center;
+}
+/* Show the "Menu" button on phones */
+#nav .nav-menu-button {
+    display: block;
+    top: 0.5em;
+    right: 0.5em;
+    position: absolute;
+}
+
+/* When "Menu" is clicked, the navbar should be 80% height */
+#nav.active {
+    height: 220%;
+}
+/* Don't show the navigation items... */
+.nav-inner {
+    display: none;
+    margin: 5px;
+}
+
+/* ...until the "Menu" button is clicked */
+#nav.active .nav-inner {
+    display: block;
+    padding: 1em 0;
+}
+
+
+/*
+ * -- NAV BAR STYLES --
+ * Styling the default .pure-menu to look a little more unique.
+ */
+#nav .pure-menu {
+    background: transparent;
+    border: none;
+    text-align: left;
+}
+    #nav .pure-menu-link:hover,
+    #nav .pure-menu-link:focus {
+        background: rgb(55, 60, 90);
+    }
+    #nav .pure-menu-link {
+        color: #fff;
+        margin-left: 0.5em;
+    }
+    #nav .pure-menu-heading {
+        border-bottom: none;
+        font-size:110%;
+        color: rgb(75, 113, 151);
+    }
+
+
+/*
+ * Styles relevant to the email messages, labels, counts, and more.
+ */
+.email-count {
+    color: rgb(75, 113, 151);
+}
+
+.email-label-personal,
+.email-label-work,
+.email-label-travel {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    margin-right: 0.5em;
+    border-radius: 3px;
+}
+.email-label-personal {
+    background: #ffc94c;
+}
+.email-label-work {
+    background: #41ccb4;
+}
+.email-label-travel {
+    background: #40c365;
+}
+
+.email-desc {
+    width: 110%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
+/* Email Item Styles */
+.email-item {
+    padding: 0.9em 1em;
+    border-bottom: 1px solid #ddd;
+    border-left: 6px solid transparent;
+}
+
+.email-item:hover {
+    /* background-color: #323235; */
+}
+
+    .email-avatar {
+        border-radius: 3px;
+        margin-right: 0.5em;
+    }
+    .email-name,
+    .email-subject {
+        margin: 0;
+    }
+    .email-name {
+        text-transform: uppercase;
+        color: #999;
+    }
+    .email-desc {
+        font-size: 16px;
+        /* font-size: 80%; */
+        margin: 0.4em 0;
+    }
+
+.email-item-selected {
+    background: #eee;
+}
+.email-item-unread {
+    border-left: 6px solid #70ef9b;
+}
+
+/* Email Content Styles */
+.email-content-header, .email-content-body, .email-content-footer {
+    padding: 1em 2em;
+}
+
+.email-content-body {
+    /* height: 80%; */
+}
+
+.email-content-body img {
+    max-width: 90%;
+}
+
+.email-subject {
+    word-break: break-word;
+    position: relative;
+    bottom: 12px;
+}
+
+    .email-content-header {
+        border-bottom: 1px solid #ddd;
+    }
+
+        .email-content-title {
+            width: 100%;
+            margin: 0.5em 0 0;
+        }
+        .email-content-subtitle {
+            width: 100%;
+            font-size: 1em;
+            margin: 0;
+            font-weight: normal;
+        }
+            .email-content-subtitle span {
+                color: #999;
+            }
+    .email-content-controls {
+        margin-top: 2em;
+        text-align: right;
+    }
+        .email-content-controls .secondary-button {
+            margin-bottom: 0.3em;
+        }
+
+    .email-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+
+/*
+ * -- TABLET (AND UP) MEDIA QUERIES --
+ * On tablets and other medium-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+@media (min-width: 40em) {
+
+    /* Move the layout over so we can fit the nav + list in on the left */
+    #layout {
+        padding-left:700px; /* "left col (nav + list)" width */
+        position: relative;
+    }
+
+    /* These are position:fixed; elements that will be in the left 700px of the screen */
+    #nav, #list {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        overflow: auto;
+    }
+    #nav {
+        margin-left:-700px; /* "left col (nav + list)" width */
+        width:300px;
+        height: 100%;
+    }
+
+    /* Show the menu items on the larger screen */
+    .nav-inner {
+        overflow: hidden;
+        display: block;
+        padding: 2em 0;
+    }
+
+    /* Hide the "Menu" button on larger screens */
+    #nav .nav-menu-button {
+        display: none;
+    }
+
+    #list {
+        z-index: 0;
+        margin-left: -400px;
+        width: 100%;
+        height: 33%;
+        border-bottom: 1px solid #ddd;
+    }
+
+    #main {
+        position: fixed;
+        /* margin-left: -100px !important; */
+        top: 33%;
+        right: 0;
+        bottom: 0;
+        left: 300px;
+        overflow: auto;
+        width: 100%; /* 400px*/
+        /* width: auto; so that it's not 100% */
+    }
+
+}
+
+/*
+ * -- DESKTOP (AND UP) MEDIA QUERIES --
+ * On desktops and other large-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+@media (min-width: 60em) {
+
+    /* This will take up the entire height, and be a little thinner */
+    #list {
+        margin-left: -400px;
+        width:400px;
+        height: 100%;
+        border-right: 1px solid #ddd;
+    }
+
+    /* This will now take up it's own column, so don't need position: fixed; */
+    #main {
+        position: static;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+
+/* DATETIME PICKER */
+
+.vdatetime-fade-enter-active,
+.vdatetime-fade-leave-active {
+  transition: opacity .4s;
+}
+.vdatetime-fade-enter,
+.vdatetime-fade-leave-to {
+  opacity: 0;
+}
+.vdatetime-overlay {
+  z-index: 999;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  transition: opacity .5s;
+}
+
+
+
+.vdatetime-calendar__navigation,
+.vdatetime-calendar__navigation * {
+  box-sizing: border-box;
+}
+.vdatetime-calendar__navigation {
+  position: relative;
+  margin: 15px 0;
+  padding: 0 30px;
+  width: 100%;
+}
+.vdatetime-calendar__navigation--previous,
+.vdatetime-calendar__navigation--next {
+  position: absolute;
+  top: 0;
+  padding: 0 5px;
+  width: 18px;
+  cursor: pointer;
+  & svg {
+    width: 8px;
+    & path {
+      transition: stroke .3s;
+    }
+  }
+  &:hover svg path {
+    stroke: #888;
+  }
+}
+.vdatetime-calendar__navigation--previous {
+  left: 25px;
+}
+.vdatetime-calendar__navigation--next {
+  right: 25px;
+  transform: scaleX(-1);
+}
+.vdatetime-calendar__current--month {
+  text-align: center;
+  text-transform: capitalize;
+}
+.vdatetime-calendar__month {
+  padding: 0 20px;
+  transition: height .2s;
+}
+.vdatetime-calendar__month__weekday,
+.vdatetime-calendar__month__day {
+  display: inline-block;
+  width: calc(100% / 7);
+  line-height: 36px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 300;
+  cursor: pointer;
+  & > span {
+    display: block;
+    width: 100%;
+    position: relative;
+    height: 0;
+    padding: 0 0 100%;
+    overflow: hidden;
+    & > span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      border: 0;
+      border-radius: 50%;
+      transition: background-color .3s, color .3s;
+    }
+  }
+}
+.vdatetime-calendar__month__weekday {
+  font-weight: bold;
+}
+.vdatetime-calendar__month__day:hover > span > span {
+  background: #eee;
+}
+.vdatetime-calendar__month__day--selected {
+  & > span > span,
+  &:hover > span > span {
+    color: #fff;
+    background: #3f51b5;
+  }
+}
+.vdatetime-calendar__month__day--disabled {
+  opacity: 0.4;
+  cursor: default;
+  &:hover > span > span {
+    color: inherit;
+    background: transparent;
+  }
+}
+
+
+
+
+.vdatetime-popup {
+    box-sizing: border-box;
+    z-index: 1000;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 340px;
+    max-width: calc(100% - 30px);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    color: #444;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    background: #fff;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    & * {
+      box-sizing: border-box;
+    }
+  }
+  .vdatetime-popup__header {
+    padding: 15px 30px;
+    background: #3f51b5;
+    color: #fff;
+    font-size: 32px;
+  }
+  .vdatetime-popup__year {
+    display: block;
+    font-weight: 300;
+    font-size: 14px;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity .3s;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  .vdatetime-popup__actions {
+    padding: 0 20px 10px 30px;
+    text-align: right;
+  }
+  .vdatetime-popup__actions__button {
+    display: inline-block;
+    border: none;
+    padding: 10px 20px;
+    background: transparent;
+    font-size: 16px;
+    color: #3f51b5;
+    cursor: pointer;
+    transition: color .3s;
+    &:hover {
+      color: #444;
+    }
+  }
+
+  
+
+
+
+  .vdatetime-time-picker {
+    box-sizing: border-box;
+    &::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+    & * {
+      box-sizing: border-box;
+    }
+  }
+  .vdatetime-time-picker__list {
+    float: left;
+    width: 50%;
+    height: 305px;
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #efefef;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ccc;
+    }
+  }
+  .vdatetime-time-picker__item {
+    padding: 10px 0;
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: font-size .3s;
+  }
+  .vdatetime-time-picker__item:hover {
+    font-size: 32px;
+  }
+  .vdatetime-time-picker__item--selected {
+    color: #3f51b5;
+    font-size: 32px;
+  }
+  .vdatetime-time-picker__item--disabled {
+    opacity: 0.4;
+    cursor: default;
+    font-size: 20px !important;
+  }
+
+
+
+  .vdatetime-year-picker {
+    box-sizing: border-box;
+    &::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+    & * {
+      box-sizing: border-box;
+    }
+  }
+  .vdatetime-year-picker__list {
+    float: left;
+    width: 100%;
+    height: 305px;
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #efefef;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ccc;
+    }
+  }
+  .vdatetime-year-picker__item {
+    padding: 10px 0;
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: font-size .3s;
+  }
+  .vdatetime-year-picker__item:hover {
+    font-size: 32px;
+  }
+  .vdatetime-year-picker__item--selected {
+    color: #3f51b5;
+    font-size: 32px;
+  }
+
+  /* custom */
+.theme-steem .vdatetime-popup__header,
+.theme-steem .vdatetime-calendar__month__day--selected > span > span,
+.theme-steem .vdatetime-calendar__month__day--selected:hover > span > span {
+  background: #323235;
+}
+
+.theme-steem .vdatetime-year-picker__item--selected,
+.theme-steem .vdatetime-time-picker__item--selected,
+.theme-steem .vdatetime-popup__actions__button {
+  color: #323235;
+}
+
+
+/* END OF DATETIME PICKER */
+
+/* LOADING SCREEN */
+.loading {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+}
+body {
+    color: rgb(229, 228, 232);
+    background-color: #252527;
+}
+
+.sk-fading-circle {
+    margin: 100px auto;
+    width: 40px;
+    height: 40px;
+    position: relative;
+  }
+  
+  .sk-fading-circle .sk-circle {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  
+  .sk-fading-circle .sk-circle:before {
+    content: '';
+    display: block;
+    margin: 0 auto;
+    width: 15%;
+    height: 15%;
+    background-color: #70ef9b;
+    border-radius: 100%;
+    -webkit-animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+            animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+  }
+  .sk-fading-circle .sk-circle2 {
+    -webkit-transform: rotate(30deg);
+        -ms-transform: rotate(30deg);
+            transform: rotate(30deg);
+  }
+  .sk-fading-circle .sk-circle3 {
+    -webkit-transform: rotate(60deg);
+        -ms-transform: rotate(60deg);
+            transform: rotate(60deg);
+  }
+  .sk-fading-circle .sk-circle4 {
+    -webkit-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+            transform: rotate(90deg);
+  }
+  .sk-fading-circle .sk-circle5 {
+    -webkit-transform: rotate(120deg);
+        -ms-transform: rotate(120deg);
+            transform: rotate(120deg);
+  }
+  .sk-fading-circle .sk-circle6 {
+    -webkit-transform: rotate(150deg);
+        -ms-transform: rotate(150deg);
+            transform: rotate(150deg);
+  }
+  .sk-fading-circle .sk-circle7 {
+    -webkit-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+            transform: rotate(180deg);
+  }
+  .sk-fading-circle .sk-circle8 {
+    -webkit-transform: rotate(210deg);
+        -ms-transform: rotate(210deg);
+            transform: rotate(210deg);
+  }
+  .sk-fading-circle .sk-circle9 {
+    -webkit-transform: rotate(240deg);
+        -ms-transform: rotate(240deg);
+            transform: rotate(240deg);
+  }
+  .sk-fading-circle .sk-circle10 {
+    -webkit-transform: rotate(270deg);
+        -ms-transform: rotate(270deg);
+            transform: rotate(270deg);
+  }
+  .sk-fading-circle .sk-circle11 {
+    -webkit-transform: rotate(300deg);
+        -ms-transform: rotate(300deg);
+            transform: rotate(300deg); 
+  }
+  .sk-fading-circle .sk-circle12 {
+    -webkit-transform: rotate(330deg);
+        -ms-transform: rotate(330deg);
+            transform: rotate(330deg); 
+  }
+  .sk-fading-circle .sk-circle2:before {
+    -webkit-animation-delay: -1.1s;
+            animation-delay: -1.1s; 
+  }
+  .sk-fading-circle .sk-circle3:before {
+    -webkit-animation-delay: -1s;
+            animation-delay: -1s; 
+  }
+  .sk-fading-circle .sk-circle4:before {
+    -webkit-animation-delay: -0.9s;
+            animation-delay: -0.9s; 
+  }
+  .sk-fading-circle .sk-circle5:before {
+    -webkit-animation-delay: -0.8s;
+            animation-delay: -0.8s; 
+  }
+  .sk-fading-circle .sk-circle6:before {
+    -webkit-animation-delay: -0.7s;
+            animation-delay: -0.7s; 
+  }
+  .sk-fading-circle .sk-circle7:before {
+    -webkit-animation-delay: -0.6s;
+            animation-delay: -0.6s; 
+  }
+  .sk-fading-circle .sk-circle8:before {
+    -webkit-animation-delay: -0.5s;
+            animation-delay: -0.5s; 
+  }
+  .sk-fading-circle .sk-circle9:before {
+    -webkit-animation-delay: -0.4s;
+            animation-delay: -0.4s;
+  }
+  .sk-fading-circle .sk-circle10:before {
+    -webkit-animation-delay: -0.3s;
+            animation-delay: -0.3s;
+  }
+  .sk-fading-circle .sk-circle11:before {
+    -webkit-animation-delay: -0.2s;
+            animation-delay: -0.2s;
+  }
+  .sk-fading-circle .sk-circle12:before {
+    -webkit-animation-delay: -0.1s;
+            animation-delay: -0.1s;
+  }
+  
+  @-webkit-keyframes sk-circleFadeDelay {
+    0%, 39%, 100% { opacity: 0; }
+    40% { opacity: 1; }
+  }
+  
+  @keyframes sk-circleFadeDelay {
+    0%, 39%, 100% { opacity: 0; }
+    40% { opacity: 1; } 
+  }
+
+
+/* END OF LOADING */
+
+/* SLIDER CUSTOM */
+.minute-slider-wrap {
+    width: 90%;
+    margin-left: 10px;
+}
+.vue-slider-component {
+    margin-top: 20px;
+}
+
+.vue-slider-tooltip {
+    background-color: #70ef9b !important;
+    border: #70ef9b !important;
+    color: #252527 !important;
+}
+
+.vue-slider-piecewise {
+    background: rgb(189, 185, 185) !important;
+}
+
+.vue-slider-process {
+    background: white !important;
+}
