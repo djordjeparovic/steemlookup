@@ -123,7 +123,7 @@ module.exports = (req, res) => {
     // }
     // let lowCiteria = Object.keys(req.body).map(k => req.body[k]).join('').length < 19; // page and radio buttons in body
 
-    logger.info(queryStr);
+    logger.info(JSON.stringify(queryStr));
     global.pgdb.query(queryStr, (err, result) => {
         if (err) {
             logger.error(err);

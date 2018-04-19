@@ -70,7 +70,7 @@ global.App = {
 
 global.pgdb.query(`select permlink from steem_posts where created >= NOW() - INTERVAL '600 minutes';`, (err, results) => {
     global.App.permlinks = results.rows.map(r => r.permlink);
-    logger.warn(`Found ${global.App.permlinks.length} posts in steem_posts table`);
+    logger.info(`Found ${global.App.permlinks.length} posts in steem_posts table`);
 });
 
 app.listen(appConfig.port, function () {
@@ -80,8 +80,10 @@ app.listen(appConfig.port, function () {
 // Timers logic
 const pullData = require('./app/pull-data.js');
 const refreshMackbot = require('./app/refresh-mackbot-list.js');
-pullData();
-setInterval(() => pullData(), appConfig.intervals['pull-data']);
+if (process.env.PULL_DATA !== 'false') {
+    pullData();
+    setInterval(() => pullData(), appConfig.intervals['pull-data']);
+}
 
 refreshMackbot();
 setInterval(() => refreshMackbot(), appConfig.intervals['refresh-mackbot-list']);
