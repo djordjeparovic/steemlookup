@@ -28,7 +28,7 @@ module.exports = (o) => {
             }
         }
     } catch (e) {
-        logger.error(e && e.message);
+        logger.error(e && e.message, 'for', permlink);
     }
     
 
