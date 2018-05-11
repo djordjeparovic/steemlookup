@@ -17,15 +17,20 @@ module.exports = (o) => {
     let tags = '';
     let format = 'html';
     let imageCount = 0;
-    if (JSON.parse(o.json_metadata).tags instanceof Array) {
-        let metadata = JSON.parse(o.json_metadata);
-        tags = metadata.tags.sort().join('|').slice(0, 499);
-        format = metadata.format;
-
-        if (metadata.image instanceof Array) {
-            imageCount = metadata.image.length;
+    try {
+        if (JSON.parse(o.json_metadata).tags instanceof Array) {
+            let metadata = JSON.parse(o.json_metadata);
+            tags = metadata.tags.sort().join('|').slice(0, 499);
+            format = metadata.format;
+    
+            if (metadata.image instanceof Array) {
+                imageCount = metadata.image.length;
+            }
         }
+    } catch (e) {
+        logger.error(e && e.message);
     }
+    
 
     // const images = o.body.match(/(\.jpg)|(\.jpeg)|(\.gif)|(\.png)|(\.JPG)|(\.JPEG)|(\.GIF)|(\.PNG)/g);
     // if (images) {
