@@ -3,15 +3,25 @@ const async = require('async');
 const steem = require('steem');
 const normalizePost = require('./app/normalize-post.js');
 
-process.on('uncaughtException', (err) => {
-    console.log(`Caught exception: ${err && err.message};${err}\n`);
-    process.exit(2);
-});
-
 global.logger = require('tracer').colorConsole({ // .console({
     format : "{{timestamp}} [{{title}}] {{message}}",
     dateformat : "d mmm yy HH:MM:ss"
 });
+
+const ex = (code) => {
+    logger.error('Code: ', code);
+    process.exit(code);
+}
+
+process.on('uncaughtException', (err) => {
+    logger.error(`Caught exception: ${err && err.message};${err}\n`);
+    ex(2);
+});
+
+// it must finish in 40 minutes
+setTimeout(() => {
+    ex(4);
+}, 40*60*1000);
 
 global.timer = require('./utils/timer.js');
 
@@ -45,11 +55,16 @@ let queryStr = `SELECT
 global.pgdb.query(queryStr, (err, pgresult) => {
     if (err) {
         logger.error(err);
-        return;
+        ex(3);
     }
     async.eachSeries(pgresult.rows, (post, cb) => {
         const author = post.author;
         const link = post.permlink.split('/')[1];
+        if (author === '' || link === '') {
+            logger.warn('Bad post', post);
+            cb(null, {});
+            return;
+        }
         steem.api.getContent(author, link, function(err, post) {
             let getContentNormalizeError = false;
             if (err) {
@@ -115,9 +130,10 @@ global.pgdb.query(queryStr, (err, pgresult) => {
     }, (err, asyncData) => {
         if (err) {
             logger.error(err);
+            ex(2);
         } else {
             logger.info(`All OK. Job took ${timer.end('posts-refresher')}ms`);
-            process.exit(1);
+            ex(1);
         }
     });
 });
