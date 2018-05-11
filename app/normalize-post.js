@@ -28,7 +28,7 @@ module.exports = (o) => {
             }
         }
     } catch (e) {
-        logger.error(e && e.message, 'for', permlink);
+        logger.error(e && e.message, 'for', permlink, 'JSON to parse', o && o.json_metadata);
     }
     
 
