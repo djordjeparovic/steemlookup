@@ -10,7 +10,7 @@ process.on('uncaughtException', (err) => {
 
 global.logger = require('tracer').colorConsole({ // .console({
     format : "{{timestamp}} [{{title}}] {{message}}",
-    dateformat : "HH:MM:ss"
+    dateformat : "d mmm yy HH:MM:ss"
 });
 
 global.timer = require('./utils/timer.js');
