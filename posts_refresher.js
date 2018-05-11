@@ -3,6 +3,11 @@ const async = require('async');
 const steem = require('steem');
 const normalizePost = require('./app/normalize-post.js');
 
+process.on('uncaughtException', (err) => {
+    console.log(`Caught exception: ${err && err.message};${err}\n`);
+    process.exit(2);
+});
+
 global.logger = require('tracer').colorConsole({ // .console({
     format : "{{timestamp}} [{{title}}] {{message}}",
     dateformat : "HH:MM:ss"
