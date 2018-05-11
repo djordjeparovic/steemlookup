@@ -20,7 +20,7 @@ function parseInteger(value, defaultValue) {
 module.exports = (req, res) => {
     // body not included
     let queryStr = `SELECT
-        permlink, author, title, author_reputation, 
+        permlink, author, title, body, author_reputation, 
         created, last_visited, last_payout, tags, imageCount, wordCount, 
         children, active_votes, net_votes, pending_payout_value FROM steem_posts 
         WHERE `;
@@ -34,7 +34,7 @@ module.exports = (req, res) => {
             page = 1;
         }
     } catch (e) {
-        logger.warn('Bad page', req.body.page);
+        logger.warn('Bad page', req.body.page, `reqId:${req.reqId}`);
     }
 
     if (req.body.queryAuthorReputationMin) {
@@ -46,10 +46,10 @@ module.exports = (req, res) => {
     }
 
     if (req.body.queryImageCountMin) {
-        queryDbParams.push(`imageCount > ${parseInteger(req.body.queryImageCountMin, 0)}`);
+        queryDbParams.push(`imagecount > ${parseInteger(req.body.queryImageCountMin, 0)}`);
     }
 
-    if (req.body.queryImageCountMin) {
+    if (req.body.queryImageCountMax) {
         queryDbParams.push(`imagecount < ${parseInteger(req.body.queryImageCountMax, 100)}`);
     }
 
@@ -90,6 +90,28 @@ module.exports = (req, res) => {
         queryDbParams.push(`created <= NOW() - INTERVAL '${minutesAgoEnd} minutes'`);
     }
 
+    if(req.body.queryTitleContains) {
+        let queryTitleContains = req.body.queryTitleContains
+        queryTitleContains = queryTitleContains
+            .split(',')
+            .map(q => `title ~* '\\m${q.trim()}\\M'`)
+            .join(' or ')
+        queryDbParams.push(
+            queryTitleContains
+        );
+    }
+
+    if(req.body.queryBodyContains) {
+        let queryBodyContains =  req.body.queryBodyContains
+        queryBodyContains = queryBodyContains
+            .split(',')
+            .map(q => `body ~* '\\m${q.trim()}\\M'`)
+            .join(' or ')
+        queryDbParams.push(
+            queryBodyContains
+        );
+    }
+
     if (req.body.queryLanguage) {
         queryDbParams.push(`lang = '${req.body.queryLanguage}'`);
     }
@@ -107,14 +129,33 @@ module.exports = (req, res) => {
         queryDbParams.push('imagecount >= 0');
     }
 
-    let responseSentFromCache = false;
-    if (queryDbParams.length == 1 && queryDbParams[0] === `created >= NOW() - INTERVAL '1440 minutes'`
-    && global.emptyQueryCache && req.body.queryExcludeMackbot === false) {
-        responseSentFromCache = true;
-        res.json(global.emptyQueryCache);
+    let sortBy = 'created'
+    let sortType = 'DESC'
+    if(req.body.querySort) {
+        let sort = req.body.querySort.split('-')
+        if(
+            sort[0] === 'created' ||
+            sort[0] === 'author_reputation' ||
+            sort[0] === 'pending_payout_value' ||
+            sort[0] === 'children' ||
+            sort[0] === 'net_votes' ||
+            sort[0] === 'imagecount' ||
+            sort[0] === 'wordcount'
+        ) {
+            sortBy = sort[0]
+        } else {
+            sortBy = 'created'
+        }
+
+        if(sort[1] === 'DESC' || sort[1] === 'ASC') {
+            sortType = sort[1]
+        }
+        else {
+            sortType = 'DESC'
+        }
     }
 
-    queryStr += ` ${queryDbParams.join(' AND ')} ORDER BY created DESC;`; // TODO LIMIT 100 afater tags fix
+    queryStr += ` ${queryDbParams.join(' AND ')} ORDER BY ${sortBy} ${sortType};`; // TODO LIMIT 100 afater tags fix
     // if low criteria present return just 1000 from db
     // if (queryDbParams.length < 3) {
     //     queryStr += ' LIMIT 1000;'
@@ -123,22 +164,37 @@ module.exports = (req, res) => {
     // }
     // let lowCiteria = Object.keys(req.body).map(k => req.body[k]).join('').length < 19; // page and radio buttons in body
 
-    logger.info(JSON.stringify(queryStr));
+    logger.debug(JSON.stringify(queryStr).replace(/\\n/g, '').replace(/\s+/g, ' '), `reqId:${req.reqId}`);
+    const dbTime = new Date();
     global.pgdb.query(queryStr, (err, result) => {
+        logger.debug(`DB time: ${((new Date()) - dbTime)/1000} seconds`, `reqId:${req.reqId}`);
         if (err) {
-            logger.error(err);
+            logger.error(err, `reqId:${req.reqId}`);
 
-            !responseSentFromCache &&
             res.json({
-                error: 'no results'
+                error: 'no results',
+                userData: req.userData
             });
+            logger.debug(`Request took ${((new Date()) - req.startTime)/1000} seconds`, `reqId:${req.reqId}`);
             return;
         }
 
         let resultsTmp = result.rows.map(r => {
+            let postThumbnail = null
+            let exp = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))/ig;
+            let foundUrls = r.body.match(exp)
+            if(foundUrls) {
+                postThumbnail = [foundUrls[0], foundUrls[1]]
+            }
+
+            if(postThumbnail === null) {
+                postThumbnail = [`https://steemitimages.com/u/${r.author}/avatar`]
+            }
+
             return {
                 title: r.title,
                 author: r.author,
+                thumbnails: postThumbnail,
                 permlink: r.permlink,
                 author_reputation: r.author_reputation,
                 created: r.created,
@@ -190,16 +246,30 @@ module.exports = (req, res) => {
                 .split('!__SEP1RAT0R__!')
                 .filter(a => a.length > 0);
 
-            resultsTmp = resultsTmp.filter(r => {
-                let exclude = true;
-                queryTagsExclude.forEach(t => {
-                    if (r.tags.indexOf(t) > -1) {
-                        exclude = false; // remove this post from results
-                    }
+
+            if(req.body.tagsExcludeType === 'all') {
+                resultsTmp = resultsTmp.filter(r => {
+                    let sumOfContainingTags = 0
+                    queryTagsExclude.forEach(t => {
+                        if(r.tags.indexOf(t) > -1) {
+                            sumOfContainingTags++
+                        }
+                    })
+                    return !(sumOfContainingTags === queryTagsExclude.length)
+                })
+            }
+
+            if(req.body.tagsExcludeType === 'any') {
+                resultsTmp = resultsTmp.filter(r => {
+                    let notExcluded = true
+                    queryTagsExclude.forEach(t => {
+                        if (r.tags.indexOf(t) > -1) {
+                            notExcluded = false
+                        }
+                    });
+                    return notExcluded;
                 });
-                // logger.warn(`${queryTagsExclude} --- ${r.tags}   ==   ${exclude}`);
-                return exclude;
-            });
+            }
         }
 
         if (req.body.queryExcludeMackbot === true) {
@@ -207,25 +277,24 @@ module.exports = (req, res) => {
                 return global.App.MackBot.indexOf(r.author) === -1;
             });
         }
-        // TODO END - MOVE THIS OUT
-
-        if (queryDbParams.length == 1 && queryDbParams[0] === `created >= NOW() - INTERVAL '1440 minutes'` && req.body.queryExcludeMackbot === false) {
-            global.emptyQueryCache = {
-                totalResults: resultsTmp.length, // result.rows.length,
-                results: resultsTmp.length > 2000 ? resultsTmp.slice(0, 500) : resultsTmp
-            }
-            !responseSentFromCache &&
-            res.json({
-                totalResults: resultsTmp.length, // result.rows.length,
-                results: resultsTmp.length > 2000 ? resultsTmp.slice(0, 500) : resultsTmp
-            });
-        } else {
-            !responseSentFromCache &&
-            res.json({
-                totalResults: resultsTmp.length, // result.rows.length,
-                results: resultsTmp.length > 2000 ? resultsTmp.slice(0, 500) : resultsTmp
-            });
+        if(req.body.queryExcludeMyMackbot === true) {
+            resultsTmp = resultsTmp.filter(r => {
+                return req.body.myMackbotList.indexOf(r.author) === -1;
+            })
         }
+        // TODO END - MOVE THIS OUT
+        let resultsToShow = 
+        Number.isInteger(Number.parseInt(req.body.queryNumOfPostsToShow)) ? 
+        Number.parseInt(req.body.queryNumOfPostsToShow) : 
+        2000;
+
+            res.json({
+                totalResults: resultsTmp.length, // result.rows.length,
+                results: resultsTmp.length > resultsToShow ? resultsTmp.slice(0, resultsToShow) : resultsTmp,
+                userData: req.userData
+            });
+            logger.debug(`Request took ${((new Date()) - req.startTime)/1000} seconds`, `reqId:${req.reqId}`);
+
         // results.slice( (page - 1)*100, page*100 )
     })
 }

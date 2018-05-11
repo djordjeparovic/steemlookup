@@ -10,7 +10,7 @@
 
 a {
     text-decoration: none;
-    color: #70ef9b;
+    color: #d6c993;
 }
 
 label {
@@ -27,12 +27,13 @@ input {
     height: 27px;
     background-color: #252527;
     border-color: rgb(109, 109, 109) !important;
+    border-radius: 0 !important;
     box-shadow: inset 0 1px 3px rgb(109, 109, 109) !important;
     color: rgb(229, 228, 232);
     width: 100%;
 }
 
-input#mackbot {
+input#mackbot, input#myMackbot {
     width: 5%;
     position: relative;
     top: 6px;
@@ -45,6 +46,7 @@ select {
     color: rgb(229, 228, 232);
     width: 80%;
     height: 27px !important;
+    padding: .2em .6em !important;
 }
 
 option {
@@ -121,7 +123,7 @@ table {
 
 /* Icons */
 .icon-item {
-    width: 21px;
+    width: 18px;
     margin-bottom: -5px;
 }
 
@@ -133,19 +135,20 @@ tr:nth-child(odd) {background: #323235}
 
 .post-note {
     position: relative;
-    left: 240px;
-    bottom: 23px;
+    left: 285px;
+    bottom: 20px;
     font-size: small;
     color: #252527;
 }
 
 .email-item:hover .post-note {
     color: #d1d1d1;
+    cursor: pointer;
 }
 
 .post-note-active {
     font-size: initial;
-    left: 220px;
+    left: 270px;
     bottom: 18px;
     color: red;
 }
@@ -157,14 +160,14 @@ tr:nth-child(odd) {background: #323235}
 
 .custom-radio-buttons {
     position: relative;
-    top: -10px;
+    /* top: -10px; */
     width: 95%;
     display: inline-flex;
 }
 
 .custom-radio-flex-input {
     position: relative;
-    top: 15px;
+    /* top: 15px; */
 }
 
 /*
@@ -191,6 +194,10 @@ tr:nth-child(odd) {background: #323235}
     font-size: 80%;
 }
 
+.pointer {
+    cursor: pointer;
+}
+
 /*
  * -- LAYOUT STYLES --
  * This layout consists of three main elements, `#nav` (navigation bar), `#list` (email list), and `#main` (email content). All 3 elements are within `#layout`
@@ -207,6 +214,7 @@ tr:nth-child(odd) {background: #323235}
 .remove-search {
     float: right;
 }
+
 /* Make the navigation 100% width on phones */
 #nav {
     width: 100%;
@@ -290,16 +298,9 @@ tr:nth-child(odd) {background: #323235}
     background: #40c365;
 }
 
-.email-desc {
-    width: 110%;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-
 /* Email Item Styles */
 .email-item {
-    padding: 0.9em 1em;
+    padding: .5em .5em;
     border-bottom: 1px solid #ddd;
     border-left: 6px solid transparent;
 }
@@ -308,23 +309,40 @@ tr:nth-child(odd) {background: #323235}
     /* background-color: #323235; */
 }
 
-    .email-avatar {
-        border-radius: 3px;
-        margin-right: 0.5em;
-    }
-    .email-name,
-    .email-subject {
-        margin: 0;
-    }
-    .email-name {
-        text-transform: uppercase;
-        color: #999;
-    }
-    .email-desc {
-        font-size: 16px;
-        /* font-size: 80%; */
-        margin: 0.4em 0;
-    }
+.email-avatar {
+    border-radius: 3px;
+    margin-right: 0.5em;
+}
+
+.email-avatar-2 {
+    position: relative;
+    top: 5px;
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    margin-right: 0.5em;
+}
+
+.email-name,
+.email-subject {
+    margin: 0;
+}
+.email-name {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    color: #999;
+}
+.email-subject {
+    width: 118%;
+    font-size: 0.9em;
+}
+.email-desc {
+    width: 118%;
+    font-size: 14px;
+    /* font-size: 80%; */
+    margin: 0 0;
+    line-height: 1.4;
+}
 
 .email-item-selected {
     background: #eee;
@@ -352,36 +370,111 @@ tr:nth-child(odd) {background: #323235}
     bottom: 12px;
 }
 
-    .email-content-header {
-        border-bottom: 1px solid #ddd;
+.email-content-header {
+    border-bottom: 1px solid #ddd;
+}
+
+    .email-content-title {
+        width: 100%;
+        margin: 0.5em 0 0;
+    }
+    .email-content-subtitle {
+        width: 100%;
+        font-size: 1em;
+        margin: 0;
+        font-weight: normal;
+    }
+        .email-content-subtitle span {
+            color: #999;
+        }
+.email-content-controls {
+    margin-top: 2em;
+    text-align: right;
+}
+    .email-content-controls .secondary-button {
+        margin-bottom: 0.3em;
     }
 
-        .email-content-title {
-            width: 100%;
-            margin: 0.5em 0 0;
-        }
-        .email-content-subtitle {
-            width: 100%;
-            font-size: 1em;
-            margin: 0;
-            font-weight: normal;
-        }
-            .email-content-subtitle span {
-                color: #999;
-            }
-    .email-content-controls {
-        margin-top: 2em;
-        text-align: right;
-    }
-        .email-content-controls .secondary-button {
-            margin-bottom: 0.3em;
-        }
+.email-avatar {
+    width: 40px;
+    height: 40px;
+}
 
-    .email-avatar {
-        width: 40px;
-        height: 40px;
+/*
+* PHONES IN PORTRAIT
+* (min-device-width : 320px) and (max-device-width : 480px)  
+*/
+@media only screen and (min-device-width : 20em) and (max-device-width : 30em) {
+    .email-subject {
+        width: 100%;
     }
 
+    .email-desc {
+        width: 100%;
+    }
+
+    .header-track span {
+        font-size: 11px;
+    }
+
+    .header-track a {
+        padding-right: 12px;
+        padding-top: 4px;
+        font-size: 11px;
+    }
+
+    .footer-links {
+        font-size: 10px;
+    }
+
+    input[type="number"] {
+        display: inline !important;
+    }
+
+    .total-results {
+        position: relative;
+        top: 5px;
+    }
+
+    .post-note, .post-note-active {
+        visibility: hidden;
+        left: 0;
+    }
+
+    .close-main-btn {
+        display: block !important;
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        z-index: 999;
+    }
+
+    #main {
+        display: none;
+    }
+    .main-modal {
+        display: block !important   ;
+        position: fixed; 
+        z-index: 999; 
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%;
+        overflow: scroll;
+        background-color: #252527;
+        color: #e5e4e8;
+    }
+
+    .email-content-controls a {
+        position: absolute;
+        right: 5px;
+    }
+
+    .login-form {
+        width: 90% !important;
+    }
+}
 
 /*
  * -- TABLET (AND UP) MEDIA QUERIES --
@@ -394,18 +487,19 @@ tr:nth-child(odd) {background: #323235}
     #layout {
         padding-left:700px; /* "left col (nav + list)" width */
         position: relative;
+        padding-top: 23px; 
     }
 
     /* These are position:fixed; elements that will be in the left 700px of the screen */
     #nav, #list {
         position: fixed;
-        top: 0;
+        top: 23px;
         bottom: 0;
         overflow: auto;
     }
     #nav {
         margin-left:-700px; /* "left col (nav + list)" width */
-        width:300px;
+        width:250px;
         height: 100%;
     }
 
@@ -425,14 +519,14 @@ tr:nth-child(odd) {background: #323235}
         z-index: 0;
         margin-left: -400px;
         width: 100%;
-        height: 33%;
+        height: 33% !important;
         border-bottom: 1px solid #ddd;
     }
 
     #main {
         position: fixed;
         /* margin-left: -100px !important; */
-        top: 33%;
+        top: 38%;
         right: 0;
         bottom: 0;
         left: 300px;
@@ -452,9 +546,9 @@ tr:nth-child(odd) {background: #323235}
 
     /* This will take up the entire height, and be a little thinner */
     #list {
-        margin-left: -400px;
-        width:400px;
-        height: 100%;
+        margin-left: -450px;
+        width: 450px;
+        height: 95% !important;
         border-right: 1px solid #ddd;
     }
 
@@ -463,6 +557,7 @@ tr:nth-child(odd) {background: #323235}
         position: static;
         margin: 0;
         padding: 0;
+        top: 0px;
     }
 }
 
@@ -921,4 +1016,228 @@ body {
 
 .vue-slider-process {
     background: white !important;
+}
+
+
+/* My Macbot List modal */
+/* The Modal (background) */
+.modal {
+    position: fixed; /* Stay in place */
+    z-index: 999; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 80%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0} 
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: white;
+}
+
+.modal-body {padding: 2px 16px;}
+
+.modal-footer {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: white;
+}
+
+.mackbot-list { 
+    max-width: 400px;
+    max-height: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+    overflow-y: scroll;
+}
+
+.mackbot-list li {
+    list-style: none;
+    color: #000;
+}
+
+input[name='numOfPosts'] {
+    width: 5%;
+    position: relative;
+    top: 6px;
+}
+
+.curie-logo {
+    display: none;
+}
+
+@media (min-width: 40em) {
+    .curie-logo {
+        display: block;
+        z-index: 9999999;
+        width: 35%;
+        position: absolute;
+        left: 0px;
+        top: 5px;
+    }
+
+    .total-results {
+        position: relative;
+        left: 35px;
+    }
+
+    #refine-your-search {
+        padding-left: 70px;
+        position: relative;
+        top: 0px;
+        padding-bottom: 20px;
+    }
+}
+
+@media (max-width: 40em) {
+    #layout {
+        padding-top: 23px;
+    }
+    .collapse-btn {
+        display: none;
+    }
+}
+
+.footer-links {
+    font-family: 'Montserrat', sans-serif;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    width: 100vw;
+    background-color: black;
+    margin-bottom: 0;
+    font-weight: bold;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.most-right {
+    float: right;
+}
+
+.help-page {
+    padding: 20px;
+    text-align: center;
+}
+
+.header-track {
+    font-family: Montserrat,sans-serif;
+    padding-left: 10px;
+    padding-top: 3px;
+    font-style: normal;
+    color: #bdb9b9;
+    position: fixed;
+    z-index: 99;
+    width: 100%;
+    height: 23px;
+    background-color: #343438;
+}
+
+.header-track a {
+    float: right;
+    padding-right: 15px;
+    font-weight: bold;
+}
+
+.search-btn {
+    padding: .5em 0.5e
+}
+
+.collapse-btn {
+    position: absolute;
+    right: 0;
+    /* top: -5px; */
+    margin: .5em .2em 0;
+    padding: .1em 0.5em;
+}
+
+.nav-collapsed {
+    width: 50px !important;
+}
+
+.list-collapsed {
+    width: 650px !important;
+    margin-left: -650px !important;
+}
+
+.main-collapsed {
+    /* position: relative !important;
+    left: -200px !important; */
+    top: 0;
+}
+
+.post-note-collapsed {
+    left: 478px;
+}
+
+.post-note-active-collapsed {
+    left: 468px;
+}
+
+.close-main-btn {
+    display: none;
+}
+
+.login-form {
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+}
+
+.login-form div {
+    padding-bottom: 15px;
+}
+
+.save-btn {
+    background-color: #d6c993;
 }

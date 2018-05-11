@@ -40,14 +40,59 @@
 
         <div v-if="dataReady" id="layout" class="content pure-g">
             <!-- togle on nav-menu-button active class here -->
-            <div id="nav" :class="['pure-u-1-3', { 'active': activeMenu }]"> 
+            <div id="nav" :class="['pure-u-1-3', { 'active': activeMenu, 'nav-collapsed': filterMenuCollapsed}]"> 
+                <img v-show="!filterMenuCollapsed" class="curie-logo" src="//steemit-production-imageproxy-upload.s3.amazonaws.com/DQmTWefzaDLymyuVQ2ZqEzpcZTbs6BvorjmLZfqJYm3RWPg">
                 <a href="javascript:;" @click="toggleMenu" class="nav-menu-button pure-menu">Change your search</a>
+                <button
+                  class="primary-button pure-button u-gray collapse-btn"
+                  @click="toggleCollapseFilter">
+                  <span v-show="!filterMenuCollapsed">&laquo;</span>
+                  <span v-show="filterMenuCollapsed">&raquo;</span>
+                </button>
 
-                <div class="nav-inner">
-                    <span class="red">Total results {{ totalResults }}</span>
-                    <form class="pure-form" style="color: white;">
+                <div class="nav-inner" v-show="!filterMenuCollapsed">
+                    <span class="red total-results">Total results {{ totalResults }}</span>
+                    <form @submit.prevent
+                      class="pure-form"
+                      style="color: white;">
                         <fieldset>
-                            <legend>Refine your search</legend>
+                            <legend id="refine-your-search">Refine your search</legend>
+
+                            <label for="numOfPosts">Load up to</label>
+                            <select style="width: 80px;" v-model="queryNumOfPostsToShow"
+                              @change="updateOnBlur"
+                              name="numOfPostss"
+                              id="numOfPosts">
+                              <option value="1000">1000</option>
+                              <option value="2000" selected>2000</option>
+                              <option value="5000">5000</option>
+                              <option value="10000">10000</option>
+                              <option value="20000">20000</option>
+                              <option value="50000">50000</option>
+                            </select>&nbsp;<span style="color: #bdb9b9;">posts</span>
+                            <br><br>
+                            <label for="sortBy">Sort by:</label>
+                            <select
+                              v-model="querySort"
+                              @change="updateOnBlur"
+                              name="sortBy"
+                              id="sortby"
+                              style="width:95%;">
+                                <option value="created-DESC">Time created - DESC</option>
+                                <option value="created-ASC">Time created - ASC</option>
+                                <option value="author_reputation-DESC">Author reputation - DESC</option>
+                                <option value="author_reputation-ASC">Author reputation - ASC</option>
+                                <option value="pending_payout_value-DESC">Pending payout value - DESC</option>
+                                <option value="pending_payout_value-ASC">Pending payout value - ASC</option>
+                                <option value="children-DESC"># of comments - DESC</option>
+                                <option value="children-ASC"># of comments - ASC</option>
+                                <option value="net_votes-DESC"># of upvotes - DESC</option>
+                                <option value="net_votes-ASC"># of upvotes - ASC</option>
+                                <option value="imagecount-DESC"># of images - DESC</option>
+                                <option value="imagecount-ASC"># of images - ASC</option>
+                                <option value="wordcount-DESC"># of words - DESC</option>
+                                <option value="wordcount-ASC"># of words - ASC</option>
+                            </select>
 
                             <label >Author reputation</label><br />
                             <input v-on:blur="updateOnBlur()" v-model="queryAuthorReputationMin" placeholder="Min" id="input-queryAuthorReputationMin" style="width:45%;" type="number"> -
@@ -81,23 +126,36 @@
 
 
                             <label for="input-queryTagsInclude">Include tags</label>
-                            <div class="custom-radio-buttons">
-                                <label for="input-tagsIncludeType-all" class="pure-radio w-45">
-                                <input v-on:blur="updateOnBlur()" v-model="tagsIncludeType" id="input-tagsIncludeType-all" type="radio" value="all" class="custom-radio-flex-input" checked>
-                                All of them
-                                </label>
-
-                                <label for="input-tagsIncludeType-any" class="pure-radio w-45">
-                                <input v-on:blur="updateOnBlur()" v-model="tagsIncludeType" id="input-tagsIncludeType-any" type="radio" value="any" class="custom-radio-flex-input">
-                                Any of them
-                                </label>
-                            </div>
-
+                            <select
+                              v-model="tagsIncludeType"
+                              @change="updateOnBlur"
+                              name="input-queryTagsInclude"
+                              id="input-queryTagsInclude">
+                                <option value="all">All of them</option>
+                                <option value="any">Any of them</option>
+                            </select>
+                            <br>
                             <input v-on:blur="updateOnBlur()" v-model="queryTagsInclude" placeholder="Add tags to be included in the search" id="input-queryTagsInclude" type="text">
 
                             <label for="input-queryTagsExclude">Exclude tags</label>
+                            <select
+                              v-model="tagsExcludeType"
+                              @change="updateOnBlur"
+                              name="input-queryTagsExclude"
+                              id="input-queryTagsExclude">
+                                <option value="all">All of them</option>
+                                <option value="any">Any of them</option>
+                            </select>
+                            <br>
                             <input v-on:blur="updateOnBlur()" v-model="queryTagsExclude" placeholder="Add tags to be excluded from the search" id="input-queryTagsExclude" type="text">
                             
+                            <label for="input-queryTitleContains">Title contains</label>
+                            <input v-on:blur="updateOnBlur()" v-model="queryTitleContains" placeholder="Title should contain word(s)" id="input-queryTitleContains" type="text">
+
+                            <label for="input-queryBodyContains">Body contains</label>
+                            <input v-on:blur="updateOnBlur()"
+                              v-model="queryBodyContains" placeholder="Body should contain word(s)" id="input-queryBodyContains" type="text">
+
                             <label for="input-queryLanguage">Select language</label>
                             <select v-model="queryLanguage" id="input-queryLanguage">
                                 <option v-for="(lang, langIndex) in supportedLanguages" v-bind:key="langIndex">
@@ -105,43 +163,73 @@
                                 </option>
                             </select><br />
 
-                            <input v-on:blur="updateOnBlur()" type="checkbox" id="mackbot" v-model="queryExcludeMackbot">
-                            <label for="mackbot">Exclude authors from Mackbot list</label>
+                            <input
+                              @blur="updateOnBlur()"
+                              type="checkbox" id="mackbot" v-model="queryExcludeMackbot">
+                            <label for="mackbot">Exclude Mackbot list</label>
                             
+                            <button
+                              type="button"
+                              class="primary-button pure-button u-gray"
+                              @click.stop="openMyMackbotListModal">
+                              Edit custom exclude list
+                            </button><br>
+                            <input v-on:blur="updateOnBlur()" type="checkbox" id="myMackbot" v-model="queryExcludeMyMackbot">
+                            <label for="myMackbot">Exclude custom list</label>
+
                             <p style="font-size: small;">Looking for posts created in time range<br />
                             {{ queryMinutesAgoStartFormatted }} - {{ queryMinutesAgoEndFormatted }}</p>
 
-                            <button v-on:click.stop="fetchData()" class="primary-button pure-button u-gray" type="button">Search</button>
-                            <button v-on:click.stop="saveSearch()" class="primary-button pure-button u-gray" type="button">Save this search</button>
+                            <button v-on:click.stop="fetchData()" class="primary-button pure-button u-gray search-btn" type="button">Search</button><br>
+                            <button v-on:click.stop="showSaveSearchModal = true" class="primary-button pure-button u-gray search-btn save-btn" type="button">Save new</button>
+                            <button v-on:click.stop="showUpdateSearchModal = true" class="primary-button pure-button u-gray search-btn save-btn" type="button">Save as</button>
                         </fieldset>
                     </form>
 
                     <ul class="pure-menu-list">
                         <li class="pure-menu-heading">Saved searches</li>
                         <li
-                        v-for="(search, searchIndex) in savedSearches" v-bind:key="searchIndex" class="pure-menu-item pure-menu-link"
-                            v-on:click="restoreSearch(search.name)">
-                            {{ search.name }}
-                            <span class="remove-search" v-on:click="removeSearch(search.name)">X</span>
+                          v-for="(search, searchIndex) in savedSearches"
+                          :key="searchIndex"
+                          @click="restoreSearch(search.name)"
+                          class="pure-menu-item pure-menu-link">
+                            <span class="restore-search pointer">{{ search.name }}</span>
+                            <span class="remove-search pointer" @click="removeSearch(search.name)">X</span>
                         </li>
                     </ul>
 
                     <br />
-                    <a href="mailto:steemlookup@gmail.com">Contact us - propose improvement or report a bug</a>
                 </div>
             </div>
 
-            <div id="list" :class="['pure-u', { 'vanish': calendarActive }]">
-
-                <div class="email-item email-item-unread pure-g"
-                v-for="(result, resultIndex) in dataReady" v-bind:key="resultIndex"
-                v-on:click="updateShowArticle(resultIndex)">
+            <virtual-list id="list"
+              :class="['pure-u', { 'vanish': calendarActive, 'list-collapsed': filterMenuCollapsed }]"
+              :size="virtualListItemSize"
+              :remain="7"
+              :start="lastSelectedPostIndex">
+                <item
+                  class="email-item email-item-unread pure-g"
+                  style="box-sizing: border-box;"
+                  v-for="(result, resultIndex) in dataReady"
+                  :key="resultIndex"
+                  @click="updateShowArticle(resultIndex)">
                     <div class="pure-u">
-                        <img width="64" height="64" :alt="`${result.author}'s avatar on Steemit.com`" class="email-avatar" :src="`https://steemitimages.com/u/${result.author}/avatar`">
+                      <div class="pure-g">
+                        <img width="64" height="64"
+                          alt="Post thumbnail"
+                          class="email-avatar"
+                          :src="result.thumbnails[0]">
+                      </div>
+                      <div class="pure-g">
+                        <img v-if="result.thumbnails[1]"
+                          class="email-avatar-2"
+                          :src="result.thumbnails[1]" 
+                          alt="Post thumbnail">
+                      </div>
                     </div>
 
                     <div class="pure-u-3-4">
-                        <h5 class="email-name">{{ result.minutes_ago }}</h5><span :class="['post-note', {'post-note-active': activePreview === result.permlink}]">{{ activePreview === result.permlink ? 'Now showing' : 'Click to show' }}</span>
+                        <h5 class="email-name">{{ result.minutes_ago }}</h5><span :class="['post-note', {'post-note-active': activePreview === result.permlink, 'post-note-collapsed': filterMenuCollapsed, 'post-note-active-collapsed': filterMenuCollapsed && (activePreview === result.permlink) }]">{{ activePreview === result.permlink ? 'Now showing' : 'Click to show' }}</span>
                         <h4 class="email-subject"><a target="_blank" :href="`https://steemit.com/@${result.permlink}`">{{ result.title }}</a> by <a target="_blank" :href="`https://steemit.com/@${result.author}`">{{ result.author }} ({{ result.author_reputation }})</a></h4>
                         <p class="email-desc">
                             <img class="icon-item" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4IiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNTEyIDUxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8Zz4KCTxwYXRoIGQ9Ik0yNTYsMEMxMTQuNjI1LDAsMCwxMTQuNjI1LDAsMjU2czExNC42MjUsMjU2LDI1NiwyNTZjMTQxLjQwNiwwLDI1Ni0xMTQuNjI1LDI1Ni0yNTZTMzk3LjQwNiwwLDI1NiwweiBNMzI1LjgxMiwzNTQuODQ0ICAgYy0xMi41OTQsMTQuMTI1LTMwLjc4LDIyLjQzOC01NC41NjIsMjQuOTM4VjQxNmgtMzAuMzEzdi0zNi4wMzFjLTM5LjY1Ni00LjA2Mi02NC4xODgtMjcuMTI1LTczLjY1Ni02OS4xMjVsNDYuODc1LTEyLjIxOSAgIGM0LjM0NCwyNi40MDYsMTguNzE5LDM5LjU5NCw0My4xMjUsMzkuNTk0YzExLjQwNiwwLDE5Ljg0NC0yLjgxMiwyNS4yMTktOC40NjlzOC4wNjItMTIuNDY5LDguMDYyLTIwLjQ2OSAgIGMwLTguMjgxLTIuNjg4LTE0LjU2My04LjA2Mi0xOC44MTNjLTUuMzc1LTQuMjgtMTcuMzQ0LTkuNjg4LTM1Ljg3NS0xNi4yNWMtMTYuNjU2LTUuNzgtMjkuNjg4LTExLjQ2OS0zOS4wNjMtMTcuMTU1ICAgYy05LjM3NS01LjYyNS0xNy0xMy41MzEtMjIuODQ0LTIzLjY4OGMtNS44NDQtMTAuMTg4LTguNzgxLTIyLjA2My04Ljc4MS0zNS41NjNjMC0xNy43MTksNS4yNS0zMy42ODgsMTUuNjg4LTQ3Ljg3NSAgIGMxMC40MzgtMTQuMTU2LDI2Ljg3NS0yMi44MTMsNDkuMzEzLTI1Ljk2OVY5NmgzMC4zMTN2MjcuOTY5YzMzLjg3NSw0LjA2Myw1NS44MTMsMjMuMjE5LDY1Ljc4MSw1Ny41bC00MS43NSwxNy4xMjUgICBjLTguMTU2LTIzLjUtMjAuNzItMzUuMjUtMzcuNzgxLTM1LjI1Yy04LjU2MywwLTE1LjQzOCwyLjYyNS0yMC41OTQsNy44NzVjLTUuMTg4LDUuMjUtNy43ODEsMTEuNjI1LTcuNzgxLDE5LjA5NCAgIGMwLDcuNjI1LDIuNSwxMy40NjksNy41LDE3LjU2M2M0Ljk2OSw0LjA2MywxNS42ODgsOS4wOTQsMzIuMDYzLDE1LjEyNWMxOCw2LjU2MywzMi4xMjUsMTIuNzgxLDQyLjM0NCwxOC42MjUgICBjMTAuMjUsNS44NDQsMTguNDA2LDEzLjkzOCwyNC41MzEsMjQuMjE5YzYuMDk0LDEwLjMxMyw5LjE1NSwyMi4zNDUsOS4xNTUsMzYuMTI2QzM0NC43MTksMzIzLjEyNSwzMzguNDA2LDM0MC43NSwzMjUuODEyLDM1NC44NDQgICB6IiBmaWxsPSIjOTFEQzVBIi8+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg==" />
@@ -165,12 +253,17 @@
 
                         </p>
                     </div>
-                </div>
+                </item>
+                <p>&nbsp;</p>
+            </virtual-list>
 
-
-            </div>
-
-            <div id="main" class="pure-u" @click="scrollTopList">
+            <div id="main"
+              class="pure-u"
+              :class="{'main-collapsed': filterMenuCollapsed, 'main-modal': showMobilePostPreview}"
+              @click="scrollTopList(showArticle.permlink)">
+                <button class="secondary-button pure-button close-main-btn most-right"
+                  @click="closeMobilePreview"
+                >Close</button>
                 <div class="email-content">
                     <div class="error" v-if="error">
                       {{ error.message }} Let us know <a href="mailto:steemlookup@gmail.com">on our email</a>
@@ -188,19 +281,122 @@
                         </div>
                     </div>
 
-                    <div class="email-content-body">                        
-                        <p style="font-size: small; margin: 0;">Preview can be hardly readable sometimes, because we are still in beta. Click to focus.</p>
-                        <!-- <div v-html="showArticle.body"></div> -->
-                        <div id="showArticle"></div>
+                    <div class="email-content-body">
+                        <vue-markdown
+                          v-show="!mdIsRenederd"
+                          id="showArticle"
+                          style="width:100%;height:100%;"
+                          :source="showArticle.body"
+                          :anchor-attributes="anchorAttrs"
+                          @rendered="getRenderedHtmlFromVueMD">
+                        </vue-markdown>
+                        <div
+                          style="width:100%;height:100%;"
+                          v-show="mdIsRenederd"
+                          v-html="renderedHtml"></div>
                     </div>
+                    <p>&nbsp;</p>
                 </div>
             </div>
+        </div>
+
+        <!-- My Mackbot List -->
+        <div v-if="showMyMackbotListModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <span @click="closeMyMackbotListModal" class="close">&times;</span>
+              <h2>Custom exclude List</h2>
+            </div>
+            <div class="modal-body">
+              <ul v-if="myMackbotList.length" class="mackbot-list">
+                <li v-for="username in myMackbotList" :key="username">
+                  {{ username }}
+                  <button
+                    class="primary-button pure-button"
+                    @click="removeFromMyMackbotList(username)">X</button>
+                </li>
+              </ul>
+
+              <div>
+                <input type="text"
+                  v-model="newUserForMackbot"
+                  placeholder="Add author to your custom exclude list"
+                  style="width:70%;">
+                <input
+                  type="button"
+                  class="primary-button pure-button u-gray"
+                  @click="addToMyMackbotList(newUserForMackbot)"
+                  :disabled="!newUserForMackbot"
+                  value="Add"
+                  style="width:25%;">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div>
+                <button class="primary-button pure-button u-gray" @click="closeMyMackbotListModal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save NEW search -->
+        <div v-if="showSaveSearchModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <span @click="cancelSaveSearch" class="close">&times;</span>
+              <h2>Save new Search</h2>
+            </div>
+            <div class="modal-body">
+              <div>
+                <input type="text"
+                  v-model="newSearchName"
+                  placeholder="Enter name for new search">
+                  <span v-if="searchNameAlreadyInUse" class="red">Search with this name already exist! Try different one.</span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div>
+                <button class="primary-button pure-button u-gray" @click="saveNewSearch">Save</button>
+                <button class="primary-button pure-button u-gray" @click="cancelSaveSearch">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Update selected search -->
+        <div v-if="showUpdateSearchModal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <span @click="cancelUpdateSearch" class="close">&times;</span>
+              <h2>Update existing Search</h2>
+            </div>
+            <div class="modal-body">
+              <div>
+                <p style="color: black;">Save As: <span style="font-weight: bold;">{{ selectedSearch }}</span>?</p>
+                <br>
+                <li v-for="search in savedSearches" :key="search.name" v-if="search.name !== selectedSearch">
+                  <span style="color: black;">{{ search.name }}</span>
+                  <button
+                    class="primary-button pure-button save-btn"
+                    @click="selectedSearch = search.name">Choose this</button>
+                </li>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div>
+                <button class="primary-button pure-button u-gray" @click="saveUpdatedSearch">Save</button>
+                <button class="primary-button pure-button u-gray" @click="cancelUpdateSearch">Cancel</button>
+              </div>
+            </div>
+          </div>
         </div>
     </div>
 </template>
 <script>
 import axios from "axios";
 import cloneDeep from "lodash.clonedeep";
+import VueMarkdown from 'vue-markdown' // production
+import virtualList from 'vue-virtual-scroll-list'
 const supportedLanguages = require("./supportedLanguages.js");
 const getAccessCode = () => {
   try {
@@ -221,6 +417,10 @@ const setAccessCode = access_code => {
 export default {
   /** The name of the application. */
   name: "Search",
+  components: {
+    VueMarkdown,
+    virtualList
+  },
   data() {
     return {
       noAccessCode: false,
@@ -230,12 +430,15 @@ export default {
       calendarActive:
         document.querySelectorAll(".vdatetime-overlay").length === 1,
       activePreview: null,
+      lastSelectedPostIndex: 0,
+      virtualListItemSize: 120,
       dataReady: null,
       totalResults: 0,
       error: null,
       page: 1,
       showArticle: {},
       savedSearches: [],
+      showSaveSearchModal: false,
       //minutesSlider: [0, 1440],
       // query
       queryTagsInclude: "",
@@ -256,16 +459,49 @@ export default {
       //   queryStartDate: "",
       //   queryEndDate: "",
       tagsIncludeType: "any",
+      tagsExcludeType: "any",
+      queryTitleContains: "",
+      queryBodyContains: "",
       queryMinutesAgoStart: 1440, // now - 24h
       queryMinutesAgoEnd: 0, // now
       queryLanguage: "",
       queryExcludeMackbot: false,
       queryMinutesAgoStartFormatted: "",
       queryMinutesAgoEndFormatted: "",
-      queryAccessCode: "johnnyb"
+      queryAccessCode: "johnnyb",
+
+      selectedSearch: '',
+      showMyMackbotListModal: false,
+      queryExcludeMyMackbot: false,
+      myMackbotList: [],
+      newUserForMackbot: '',
+      queryNumOfPostsToShow: "2000",
+      anchorAttrs: {
+        target: '_blank',
+      },
+      querySort: 'created-DESC',
+
+      mdIsRenederd: false,
+      renderedHtml: '',
+      filterMenuCollapsed: false,
+      showMobilePostPreview: false,
+      isLoggedIn: false,
+      token: '',
+      showSaveSearchModal: false,
+      newSearchName: '',
+      searchNameAlreadyInUse: false,
+      showUpdateSearchModal: false
     };
   },
   created() {
+    var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+    // console.log(Math.floor(y / 7));
+    this.virtualListItemSize = Math.floor(y/7);
+
     this.queryAccessCode = getAccessCode() || "johnnyb";
     // fetch the data when the view is created and the data is already being observed
     this.fetchData();
@@ -279,11 +515,31 @@ export default {
     }, 30 * 1000);
 
     try {
-      let savedSearches =
-        JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
-      this.savedSearches = savedSearches;
+      let token = localStorage.getItem('SL-user-token')
+      if(token) {
+        this.token = token
+        this.isLoggedIn = true
+      }
     } catch (e) {
-      console.warn("cant load saved searches");
+      console.log(e)
+    }
+
+    if(!this.isLoggedIn) {
+      try {
+        let savedSearches =
+          JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
+        this.savedSearches = savedSearches;
+      } catch (e) {
+        console.warn("cant load saved searches");
+      }
+
+      try {
+        let myMackbotList =
+          JSON.parse(localStorage.getItem("SL-mackbot-list")) || [];
+        this.myMackbotList = myMackbotList;
+      } catch (e) {
+        console.warn("cant load saved mackbot list");
+      }
     }
   },
 
@@ -312,6 +568,11 @@ export default {
       this.fetchData();
     },
     fetchData(params = {}) {
+      if (window.queryAlreadyInProgress) {
+        return;
+      }
+
+      window.queryAlreadyInProgress = true;
       this.$nextTick(() => {
         if (!params.noLoading) {
           this.loading = true;
@@ -334,11 +595,18 @@ export default {
           "queryPendingPayoutMin",
           "queryPendingPayoutMax",
           "tagsIncludeType",
+          "tagsExcludeType",
+          "queryTitleContains",
+          "queryBodyContains",
           "queryMinutesAgoStart",
           "queryMinutesAgoEnd",
           "queryLanguage",
           "queryExcludeMackbot",
-          "queryAccessCode"
+          "queryAccessCode",
+          "queryExcludeMyMackbot",
+          "myMackbotList",
+          "queryNumOfPostsToShow",
+          "querySort"
         ];
         const apiParams = {};
         qparams.forEach(param => {
@@ -351,17 +619,33 @@ export default {
         axios
           .post(`/query`, Object.assign({}, apiParams))
           .then(response => {
+            window.queryAlreadyInProgress = false;
             this.loading = false;
             if (response.data.totalResults > 0) {
               this.noAccessCode = false;
               this.dataReady = response.data.results;
               this.totalResults = response.data.totalResults;
               if (!params.noLoading) {
-                this.showArticle = response.data.results[0];
+                // this.showArticle = response.data.results[0];
                 this.activePreview = this.showArticle.permlink;
-                this.updateShowArticle(0);
+                this.updateShowArticle(0, true);
               }
               this.error = null;
+              if(response.data.userData) {
+                try {
+                  window.userLoggedIn = true;
+                  this.isLoggedIn = true
+                  this.token = response.data.userData.token
+                  this.savedSearches = JSON.parse(response.data.userData.saved_searches) ? 
+                    JSON.parse(response.data.userData.saved_searches) : []
+                  this.myMackbotList = JSON.parse(response.data.userData.custom_user_list) ?
+                    JSON.parse(response.data.userData.custom_user_list) : []
+                } catch(e) {
+                  console.log(e)
+                }
+              } else {
+                this.isLoggedIn = false
+              }
             } else if (response.data.error === "ACCESS_DENIED") {
               this.noAccessCode = true;
             } else {
@@ -388,41 +672,118 @@ export default {
             console.warn("cant load query data");
             this.loading = false;
             this.error = e;
+            window.queryAlreadyInProgress = false;
           });
       });
     },
-    saveSearch() {
-      try {
-        let searchName = prompt(
-          "Please enter name for this search",
-          "The first saved search"
-        );
-        searchName = searchName || "The first saved search";
-        let obj2Save = {
-          name: searchName
-        };
+    saveNewSearch() {
+      if (!this.newSearchName) {
+        return
+      }
+      if (this.savedSearches.find(s => s.name === this.newSearchName)) {
+        this.searchNameAlreadyInUse = true
+        return
+      }
 
+      let obj2Save = {
+        name: this.newSearchName
+      };
+      Object.keys(this)
+        .filter(k => k.indexOf("query") === 0)
+        .forEach(k => {
+          obj2Save[k] = this[k];
+        });
+      this.savedSearches.push(obj2Save)
+
+      if(this.isLoggedIn) {
+        axios.post('/update-saved-searches', { savedSearches: JSON.stringify(this.savedSearches) })
+          .then(response => {
+            console.log(response)
+            this.showSaveSearchModal = false
+            alert(`Search: ${this.newSearchName} was successfully saved`)
+          })
+          .catch(error => {
+            console.log(error)
+            this.showSaveSearchModal = false
+            this.error = { message: "Cant save this search" };
+          })
+      } else {
+        try {
+          let savedSearches = JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
+          savedSearches.push(obj2Save);
+          this.savedSearches = savedSearches;
+          localStorage.setItem(
+            "SL-saved-searches",
+            JSON.stringify(this.savedSearches)
+          );
+          // this.selectedSearch = ''
+          this.showSaveSearchModal = false
+          alert('Search: ' + this.newSearchName + ' was successfully saved.')
+        } catch (e) {
+          this.showSaveSearchModal = false
+          this.error = { message: "Cant save this search." };
+        }
+      }
+      this.searchNameAlreadyInUse = false
+    },
+    cancelSaveSearch () {
+      this.showSaveSearchModal = false
+      this.newSearchName = ''
+    },
+    saveUpdatedSearch () {
+      if(!this.selectedSearch) {
+        return
+      }
+      let obj2Save = {
+          name: this.selectedSearch
+        };
         Object.keys(this)
           .filter(k => k.indexOf("query") === 0)
           .forEach(k => {
             obj2Save[k] = this[k];
           });
-        let savedSearches =
-          JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
-        savedSearches.push(obj2Save);
-        this.savedSearches = savedSearches;
-        localStorage.setItem(
-          "SL-saved-searches",
-          JSON.stringify(this.savedSearches)
-        );
-      } catch (e) {
-        this.error = { message: "Cant save this search" };
+      
+      if(this.isLoggedIn) {
+        let savedSearches = cloneDeep(this.savedSearches);
+        savedSearches = savedSearches.filter(s => s.name !== this.selectedSearch)
+        savedSearches.push(obj2Save)
+        axios.post('/update-saved-searches', { savedSearches: JSON.stringify(savedSearches) })
+          .then(response => {
+            console.log(response)
+            this.showUpdateSearchModal = false
+            alert(`Search: ${this.selectedSearch} was successfully updated.`)
+          })
+          .catch(error => {
+            console.log(error)
+            this.showUpdateSearchModal = false
+            this.error = { message: "Cant update this search." };
+          })
+      } else {
+        this.savedSearches = this.savedSearches.filter(s => s.name !== this.selectedSearch)
+        this.savedSearches.push(obj2Save)
+        try {
+          localStorage.setItem('SL-saved-searches', JSON.stringify(this.savedSearches))
+          this.showUpdateSearchModal = false
+        } catch (e) {
+          console.log(e)
+          this.showUpdateSearchModal = false
+          this.error = { message: "Cant update this search." }
+        }
       }
+    },
+    cancelUpdateSearch () {
+      this.showUpdateSearchModal = false
     },
     restoreSearch(name) {
       try {
-        let savedSearches =
-          JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
+        this.selectedSearch = name
+        let savedSearches
+        if(!this.isLoggedIn) {
+          savedSearches = JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
+        } else {
+          savedSearches = this.savedSearches
+        }
+  
         let targetSearch = savedSearches.filter(s => s.name === name)[0];
         if (targetSearch) {
           Object.keys(targetSearch)
@@ -432,23 +793,49 @@ export default {
             });
         }
       } catch (e) {
+        this.selectedSearch = ''
         this.error = { message: "Cant restore this search" };
       }
     },
     removeSearch(name) {
+      this.selectedSearch = ''
       try {
-        let savedSearches =
-          JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
-        this.savedSearches = savedSearches.filter(s => s.name != name);
-        localStorage.setItem(
-          "SL-saved-searches",
-          JSON.stringify(this.savedSearches)
-        );
+        let savedSearches
+        if(!this.isLoggedIn) {
+          savedSearches = JSON.parse(localStorage.getItem("SL-saved-searches")) || [];
+          this.savedSearches = savedSearches.filter(s => s.name != name);
+          localStorage.setItem(
+            "SL-saved-searches",
+            JSON.stringify(this.savedSearches)
+          );
+        } else {
+          savedSearches = cloneDeep(this.savedSearches)
+          savedSearches = savedSearches.filter(s => s.name !== name);
+          axios.post('/update-saved-searches', { savedSearches: JSON.stringify(savedSearches) })
+            .then(response => {
+              console.log(response)
+              this.savedSearches = savedSearches;
+            })
+            .catch(error => {
+              console.log(error)
+            })
+        }
       } catch (e) {
+        this.selectedSearch = ''
         this.error = { message: "Cant remove this search" };
       }
     },
-    updateShowArticle(index) {
+    updateSearch () {
+      console.log('clicked update search')
+    },
+    updateShowArticle(index, hideOnMobile) {
+      // sakrij otvaranje prvog post-a nakon seach update-a
+      if(hideOnMobile) {
+        this.showMobilePostPreview = false
+      } else {
+        this.showMobilePostPreview = true
+      }
+      this.mdIsRenederd = false
       this.showArticle = JSON.parse(JSON.stringify(this.dataReady[index]));
       this.showArticle.created = new Date(this.showArticle.created).toString(
         "MMM d yyyy HH:mm:ss"
@@ -457,15 +844,48 @@ export default {
       axios
         .post(`/query-post`, this.showArticle)
         .then(responsePost => {
-          // this.showArticle = responsePost.data;
-          document.getElementById("showArticle").innerHTML =
-            responsePost.data.body;
+          this.showArticle = responsePost.data;
+          this.showArticle.created = new Date(this.showArticle.created).toString(
+        "MMM d yyyy HH:mm:ss");
+          // this.showArticle.body = responsePost.data.body
+          // document.getElementById("showArticle").innerHTML =
+          //   responsePost.data.body;
         })
         .catch(e => {
           console.warn("cant load post data", e);
         });
 
       this.activePreview = this.dataReady[index].permlink;
+    },
+    getRenderedHtmlFromVueMD (renderedHtml) {
+      renderedHtml = renderedHtml
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+      let exp = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))/ig;
+      let foundUrls = renderedHtml.match(exp)
+      if(foundUrls) {
+        foundUrls.forEach(url => {
+          let indexOfUrl = renderedHtml.indexOf(url)
+          let endOfUrl = indexOfUrl + url.length
+          if(
+            renderedHtml.slice(indexOfUrl -5, indexOfUrl).indexOf('src') > -1 ||
+            renderedHtml.slice(indexOfUrl -7, indexOfUrl).indexOf('href') > -1
+          ) {
+            // console.log("HAS IMG TAG")
+          } else {
+            renderedHtml = [
+              renderedHtml.slice(0,indexOfUrl), 
+              '<img src="', 
+              renderedHtml.slice(indexOfUrl, endOfUrl),
+              '">',
+              renderedHtml.slice(endOfUrl) 
+            ].join('')
+          }
+        })
+      }
+      this.renderedHtml = renderedHtml
+      this.mdIsRenederd = true
     },
     toggleMenu() {
       this.activeMenu = this.activeMenu ? "" : "active";
@@ -479,20 +899,73 @@ export default {
         document.querySelectorAll(".vdatetime-overlay").length === 1;
       // this.updateDataFromSlider();
     },
-    scrollTopList() {
-      try {
-        if (
-          document.querySelector(".post-note-active").offsetTop >
-          window.innerHeight - 150
-        ) {
-          document.getElementById("list").scrollTop =
-            document.querySelector(".post-note-active").offsetTop - 50;
-        }
-      } catch (e) {
-        window.steem_lookup_errors.push(
-          `document.querySelector('.post-note-active').offsetTop; not defined`
-        );
+    scrollTopList(permlink) {
+      let activePost = this.dataReady.find((element, index) => element.permlink === permlink)
+      if(activePost !== undefined) {
+        // hack - virtual list dozvoljava scroll to samo na promenu :start vrednosti,
+        // svaki sledeci klik nema efekta
+        this.lastSelectedPostIndex = this.dataReady.indexOf(activePost) + 1
+        this.$nextTick(() => {
+          this.lastSelectedPostIndex = this.dataReady.indexOf(activePost)
+        })
+      } else {
+        // TODO: post nije vise u rezultatima
       }
+    },
+    openMyMackbotListModal () {
+      this.showMyMackbotListModal = true
+    },
+    closeMyMackbotListModal () {
+      this.showMyMackbotListModal = false
+    },
+    addToMyMackbotList (username) {
+      if(!this.myMackbotList.includes(username)) {
+        this.myMackbotList.push(username)
+        this.updateSLMackbotList()
+        this.newUserForMackbot = ''
+      } else {
+        alert("User is already in your Mackbot list")
+      }
+    },
+    removeFromMyMackbotList (username) {
+      if(this.myMackbotList.includes(username)) {
+        let indexOfSelected = this.myMackbotList.indexOf(username)
+        this.myMackbotList.splice(indexOfSelected, 1)
+        this.updateSLMackbotList()
+      }
+    },
+    updateSLMackbotList () {
+      if(!this.isLoggedIn) {
+        try {
+          localStorage.removeItem('SL-mackbot-list')
+          localStorage.setItem(
+            'SL-mackbot-list',
+            JSON.stringify(this.myMackbotList)
+          );
+        } catch (e) {
+          console.log('Error updating mackbot list')
+        }
+      } else {
+        axios.post(`/update-custom-user-list`, {customUserList: JSON.stringify(this.myMackbotList)})
+          .then(response => {
+            alert(`Cutom list was successfully updated.`)
+          })
+          .catch(error => {
+            this.error = { message: `Can't update custom list.` };
+          })
+      }
+    },
+    toggleCollapseFilter () {
+      this.filterMenuCollapsed = !this.filterMenuCollapsed
+    },
+    closeMobilePreview () {
+      this.showMobilePostPreview = false
+    },
+    updateRemoteSavedSearches () {
+      console.log('remote searches')
+    },
+    updateRemoteCustomeExclList () {
+      console.log('remote exclude list')
     }
     // updateDataFromSlider() {
     //   try {

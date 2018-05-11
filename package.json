@@ -1,19 +1,14 @@
 {
   "name": "steemlookup",
-  "version": "1.0.0",
-  "description": "Frontend for Steemit filtering tool",
+  "version": "2.0.0",
+  "description": "Steemit filtering tool by Curies",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "devstart": "echo 'dont' && exit 2 && npm run watch & npm run nodemon",
     "postinstall": "npm run build",
     "build": "webpack --env.env=prod",
     "watch": "webpack --env.env=dev --watch",
     "nodemon": "nodemon --inspect server.js --ext js,json,jsx --ignore node_modules/ --ignore tests/ --ignore build/ --ignore 'app/client/**/*.js$'",
-    "lint": "npm run lint:js && npm run lint:css",
-    "lint:js": "eslint app tests webpack client/* '*.js' --ext .js --ignore-pattern 'client/vendor/*.js'",
-    "lint:js:fix": "npm run eslint -- --fix",
-    "lint:css": "stylelint 'client/**/*.css'",
     "todo": "git grep -n '// TODO' -- './' ':!package.json' | sed 's/\\(.*:\\)\\([0-9]*\\):.*\\(\\/\\/ TODO.*\\)/\\1\\2 ==> \\3/' > TODO.md"
   },
   "author": "hcg.ninja",
@@ -45,14 +40,17 @@
     "pg": "^7.4.1",
     "postcss-loader": "2.0.10",
     "random-string": "^0.2.0",
+    "sha256": "^0.2.0",
     "steem": "0.7.1",
     "style-loader": "0.20.1",
     "tracer": "0.8.11",
     "vue": "2.5.13",
     "vue-loader": "13.7.0",
+    "vue-markdown": "^2.2.4",
     "vue-router": "3.0.1",
     "vue-slider-component": "^2.5.3",
-    "vue-template-compiler": "2.5.13"
+    "vue-template-compiler": "2.5.13",
+    "vue-virtual-scroll-list": "^1.2.5"
   },
   "devDependencies": {
     "autoprefixer": "7.2.5",

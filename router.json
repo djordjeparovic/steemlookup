@@ -21,6 +21,36 @@
             "controller": "query-post.js"
         },
         {
+            "path": "/login",
+            "method": "post",
+            "controller": "login.js"
+        },
+        {
+            "path": "/logout",
+            "method": "post",
+            "controller": "logout.js"
+        },
+        {
+            "path": "/register",
+            "method": "post",
+            "controller": "register.js"
+        },
+        {
+            "path": "/update-saved-searches",
+            "method": "post",
+            "controller": "update-saved-searches.js"
+        },
+        {
+            "path": "/update-custom-user-list",
+            "method": "post",
+            "controller": "update-custom-user-list.js"
+        },
+        {
+            "path": "/help",
+            "method": "get",
+            "controller": "help" 
+        },
+        {
             "path": "/",
             "method": "get",
             "controller": "html.js"
