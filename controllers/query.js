@@ -82,11 +82,11 @@ module.exports = (req, res) => {
     }
 
     if (req.body.queryMinutesAgoStart) {
-        let minutesAgoStart = ('' + req.body.queryMinutesAgoStart).replace(/[^\d]/g, '')
+        let minutesAgoStart = ('' + req.body.queryMinutesAgoStart).slice(0, 4).replace(/[^\d]/g, '')
         queryDbParams.push(`created >= NOW() - INTERVAL '${minutesAgoStart} minutes'`);
     }
     if (req.body.queryMinutesAgoEnd) {
-        let minutesAgoEnd = ('' + req.body.queryMinutesAgoEnd).replace(/[^\d]/g, '')
+        let minutesAgoEnd = ('' + req.body.queryMinutesAgoEnd).slice(0, 4).replace(/[^\d]/g, '')
         queryDbParams.push(`created <= NOW() - INTERVAL '${minutesAgoEnd} minutes'`);
     }
 

@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
                 logger.error(err, `reqId:${req.reqId}`);
                 next();
             } else if (result.rows.length === 0) {
-                logger.warn('User not found', JSON.stringify(cookies), `reqId:${req.reqId}`);
+                logger.info('User not found', JSON.stringify(cookies), `reqId:${req.reqId}`);
                 next();
             } else {
                 logger.info(`Logged in user:  ${result.rows[0].email}`, `reqId:${req.reqId}`);
