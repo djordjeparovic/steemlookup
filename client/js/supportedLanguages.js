@@ -2,6 +2,7 @@ module.exports = () => {
     return [
         'arabic',
         'bengali',
+        'dutch',
         'english',
         'french',
         'german',
