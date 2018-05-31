@@ -16,27 +16,6 @@
                 <div class="sk-circle12 sk-circle"></div>
             </div>
         </div>
-        <div class="welcome-message" v-if="noAccessCode">
-          <p>
-            In order to gain access to SteemLookup.com, please transfer 10 steem to steemit account:<br />
-              &nbsp;&nbsp;&nbsp;&nbsp;address: laniakea1 <br />
-              &nbsp;&nbsp;&nbsp;&nbsp;memo:&nbsp;&nbsp;&nbsp; your e-mail address<br />
-          </p>
-          <p>
-            You will then receive code that is valid for the next 30 days, and it is only valid for one IP address.
-          </p>
-          <p>
-            Thank you for supporting the SteemLookup.com project!
-          </p>
-          You don't seem to have a valid access code.<br />
-          For any additional questions or other paying methods please let's get in touch
-          at <a href="mailto:steemlookup@gmail.com">steemlookup@gmail.com</a><br />
-          <br /><br />If you already have the code paste it here<br />
-          <input type="password" v-model="queryAccessCode" class="queryAccessCodeInput">
-          <button class="submitAccessToken"
-          @click.stop="submitAccessToken()"
-          >Submit</button>
-        </div>
 
         <div v-if="dataReady" id="layout" class="content pure-g">
             <!-- togle on nav-menu-button active class here -->
@@ -44,14 +23,20 @@
                 <img v-show="!filterMenuCollapsed" class="curie-logo" src="//steemit-production-imageproxy-upload.s3.amazonaws.com/DQmTWefzaDLymyuVQ2ZqEzpcZTbs6BvorjmLZfqJYm3RWPg">
                 <a href="javascript:;" @click="toggleMenu" class="nav-menu-button pure-menu">Change your search</a>
                 <button
-                  class="primary-button pure-button u-gray collapse-btn"
+                  class="primary-button pure-button collapse-btn"
                   @click="toggleCollapseFilter">
-                  <span v-show="!filterMenuCollapsed">&laquo;</span>
-                  <span v-show="filterMenuCollapsed">&raquo;</span>
+                    <div style="display: block; marign: 0 auto;" class="collapse-btn-child">
+                      <span v-show="!filterMenuCollapsed">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 24 24" width="24" height="24"><defs><clipPath id="_clipPath_v1XZEi6sRMReNRt4JmibeQUvbDA9kH7c"><rect width="24" height="24"/></clipPath></defs><g clip-path="url(#_clipPath_v1XZEi6sRMReNRt4JmibeQUvbDA9kH7c)"><path d=" M 11 5 L 4 12 L 11 19" fill-rule="evenodd" fill="none" vector-effect="non-scaling-stroke" stroke-width="2" stroke="rgb(255,255,255)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4"/></g></svg>
+                      </span>
+                      <span v-show="filterMenuCollapsed">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 24 24" width="24" height="24"><defs><clipPath id="_clipPath_3MTA8wqwPkVSN5h1q6XiXxvpxaNsJ52i"><rect width="24" height="24"/></clipPath></defs><g clip-path="url(#_clipPath_3MTA8wqwPkVSN5h1q6XiXxvpxaNsJ52i)"><clipPath id="_clipPath_FFqARoG3YpBUCeh1ceqwiyB0wzN6ZyUD"><rect x="0" y="0" width="24" height="24" transform="matrix(1,0,0,1,0,0)" fill="rgb(255,255,255)"/></clipPath><g clip-path="url(#_clipPath_FFqARoG3YpBUCeh1ceqwiyB0wzN6ZyUD)"><g id="Group"><path d=" M 4 5 L 11 12 L 4 19" fill-rule="evenodd" fill="none" vector-effect="non-scaling-stroke" stroke-width="2" stroke="rgb(255,255,255)" stroke-opacity="100" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4"/></g></g></g></svg>
+                      </span>
+                    </div>
                 </button>
 
                 <div class="nav-inner" v-show="!filterMenuCollapsed">
-                    <span class="red total-results">Total results {{ totalResults }}</span>
+                    <span class="red total-results">Total results {{ (totalResults || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') }}</span>
                     <form @submit.prevent
                       class="pure-form"
                       style="color: white;">
@@ -70,7 +55,17 @@
                               <option value="20000">20000</option>
                               <option value="50000">50000</option>
                             </select>&nbsp;<span style="color: #bdb9b9;">posts</span>
-                            <br><br>
+                            <br>
+                            <label for="externalFe">External linking</label>
+                            <select style="width: 180px;" v-model="externalFe"
+                              name="externalFe"
+                              id="externalFe">
+                              <option value="steemit.com" selected>steemit.com</option>
+                              <option value="busy.org">busy.org</option>
+                              <option value="steemitstage.com">steemitstage.com</option>
+                              <option value="steemdb.com">steemdb.com</option>
+                            </select><br>
+                            <br>
                             <label for="sortBy">Sort by:</label>
                             <select
                               v-model="querySort"
@@ -115,6 +110,10 @@
                             <input v-on:blur="updateOnBlur()" v-model="queryPendingPayoutMin" placeholder="0.0" id="input-queryPendingPayoutMin" style="width:45%;" type="number" step="0.01" min="0"> -
                             <input v-on:blur="updateOnBlur()" v-model="queryPendingPayoutMax" placeholder="Max" id="input-queryPendingPayoutMax" style="width:45%;" type="number" step="0.01" max="1000"><br />
 
+                            <label>User Steem Power</label><br />
+                            <input v-on:blur="updateOnBlur()" v-model="querySteemPowerMin" placeholder="Min" id="input-querySteemPowerMin" style="width:45%;" type="number"> -
+                            <input v-on:blur="updateOnBlur()" v-model="querySteemPowerMax" placeholder="Max" id="input-querySteemPowerMax" style="width:45%;" type="number"><br />
+
                             <label>Number of votes</label><br />
                             <input v-on:blur="updateOnBlur()" v-model="queryVoteCountMin" placeholder="Min" id="input-queryVoteCountMin" style="width:45%;" type="number"> -
                             <input v-on:blur="updateOnBlur()" v-model="queryVoteCountMax" placeholder="Max" id="input-queryVoteCountMax" style="width:45%;" type="number"><br />
@@ -150,11 +149,32 @@
                             <input v-on:blur="updateOnBlur()" v-model="queryTagsExclude" placeholder="Add tags to be excluded from the search" id="input-queryTagsExclude" type="text">
                             
                             <label for="input-queryTitleContains">Title contains</label>
-                            <input v-on:blur="updateOnBlur()" v-model="queryTitleContains" placeholder="Title should contain word(s)" id="input-queryTitleContains" type="text">
+                            <input v-on:blur="updateOnBlur()"
+                              v-model="queryTitleContains"
+                              placeholder="Title should contain words"
+                              id="input-queryTitleContains"
+                              type="text">
 
                             <label for="input-queryBodyContains">Body contains</label>
                             <input v-on:blur="updateOnBlur()"
-                              v-model="queryBodyContains" placeholder="Body should contain word(s)" id="input-queryBodyContains" type="text">
+                              v-model="queryBodyContains"
+                              placeholder="Body should contain words"
+                              id="input-queryBodyContains"
+                              type="text">
+
+                            <label for="input-queryTitleNotContains">Title doesn't contain</label>
+                            <input v-on:blur="updateOnBlur()"
+                              v-model="queryTitleNotContains"
+                              placeholder="Title doesn't contain words"
+                              id="input-queryTitleNotContains"
+                              type="text">
+
+                            <label for="input-queryBodyNotContains">Body doesn't contain</label>
+                            <input v-on:blur="updateOnBlur()"
+                              v-model="queryBodyNotContains" 
+                              placeholder="Body doesn't contain words" 
+                              id="input-queryBodyNotContains" 
+                              type="text">
 
                             <label for="input-queryLanguage">Select language</label>
                             <select v-model="queryLanguage" id="input-queryLanguage">
@@ -176,6 +196,10 @@
                             </button><br>
                             <input v-on:blur="updateOnBlur()" type="checkbox" id="myMackbot" v-model="queryExcludeMyMackbot">
                             <label for="myMackbot">Exclude custom list</label>
+
+                            <br>
+                            <input type="checkbox" id="nightMode" v-model="nightMode" value="true">
+                            <label for="nightMode">Night mode</label>
 
                             <p style="font-size: small;">Looking for posts created in time range<br />
                             {{ queryMinutesAgoStartFormatted }} - {{ queryMinutesAgoEndFormatted }}</p>
@@ -203,9 +227,15 @@
             </div>
 
             <virtual-list id="list"
-              :class="['pure-u', { 'vanish': calendarActive, 'list-collapsed': filterMenuCollapsed }]"
+              :class="['pure-u',
+                {'list-collapsed': filterMenuCollapsed,
+                  'preview-collapsed-list': previewCollapsed,
+                  'filter-and-preview-collapsed-list': previewCollapsed && filterMenuCollapsed
+                }
+              ]"
               :size="virtualListItemSize"
-              :remain="7"
+              :remain="10"
+              :bench="30"
               :start="lastSelectedPostIndex">
                 <item
                   class="email-item email-item-unread pure-g"
@@ -217,20 +247,20 @@
                       <div class="pure-g">
                         <img width="64" height="64"
                           alt="Post thumbnail"
-                          class="email-avatar"
+                          :class="['email-avatar-hv', {'email-avatar': !previewCollapsed, 'avatar-1-collapsed': previewCollapsed}]"
                           :src="result.thumbnails[0]">
                       </div>
                       <div class="pure-g">
                         <img v-if="result.thumbnails[1]"
-                          class="email-avatar-2"
+                          :class="{'email-avatar-2': !previewCollapsed, 'avatar-2-collapsed': previewCollapsed}"
                           :src="result.thumbnails[1]" 
                           alt="Post thumbnail">
                       </div>
                     </div>
 
                     <div class="pure-u-3-4">
-                        <h5 class="email-name">{{ result.minutes_ago }}</h5><span :class="['post-note', {'post-note-active': activePreview === result.permlink, 'post-note-collapsed': filterMenuCollapsed, 'post-note-active-collapsed': filterMenuCollapsed && (activePreview === result.permlink) }]">{{ activePreview === result.permlink ? 'Now showing' : 'Click to show' }}</span>
-                        <h4 class="email-subject"><a target="_blank" :href="`https://steemit.com/@${result.permlink}`">{{ result.title }}</a> by <a target="_blank" :href="`https://steemit.com/@${result.author}`">{{ result.author }} ({{ result.author_reputation }})</a></h4>
+                        <h5 class="email-name">{{ result.minutes_ago }}</h5><span :class="['post-note', {'post-note-active': activePreview === result.permlink, 'post-note-collapsed': filterMenuCollapsed, 'post-note-active-collapsed': filterMenuCollapsed && (activePreview === result.permlink), 'note-hidden': previewCollapsed }]">{{ activePreview === result.permlink ? 'Now showing' : 'Click to show' }}</span>
+                        <h4 class="email-subject"><a target="_blank" :href="`https://${externalFe}${externalFe === 'steemdb.com' ? '/steemit' : ''}/@${result.permlink}`">{{ result.title }}</a> by <a target="_blank" :href="`https://${externalFe}/@${result.author}`">{{ result.author }} ({{ result.author_reputation }})</a></h4>
                         <p class="email-desc">
                             <img class="icon-item" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4IiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNTEyIDUxMjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8Zz4KCTxwYXRoIGQ9Ik0yNTYsMEMxMTQuNjI1LDAsMCwxMTQuNjI1LDAsMjU2czExNC42MjUsMjU2LDI1NiwyNTZjMTQxLjQwNiwwLDI1Ni0xMTQuNjI1LDI1Ni0yNTZTMzk3LjQwNiwwLDI1NiwweiBNMzI1LjgxMiwzNTQuODQ0ICAgYy0xMi41OTQsMTQuMTI1LTMwLjc4LDIyLjQzOC01NC41NjIsMjQuOTM4VjQxNmgtMzAuMzEzdi0zNi4wMzFjLTM5LjY1Ni00LjA2Mi02NC4xODgtMjcuMTI1LTczLjY1Ni02OS4xMjVsNDYuODc1LTEyLjIxOSAgIGM0LjM0NCwyNi40MDYsMTguNzE5LDM5LjU5NCw0My4xMjUsMzkuNTk0YzExLjQwNiwwLDE5Ljg0NC0yLjgxMiwyNS4yMTktOC40NjlzOC4wNjItMTIuNDY5LDguMDYyLTIwLjQ2OSAgIGMwLTguMjgxLTIuNjg4LTE0LjU2My04LjA2Mi0xOC44MTNjLTUuMzc1LTQuMjgtMTcuMzQ0LTkuNjg4LTM1Ljg3NS0xNi4yNWMtMTYuNjU2LTUuNzgtMjkuNjg4LTExLjQ2OS0zOS4wNjMtMTcuMTU1ICAgYy05LjM3NS01LjYyNS0xNy0xMy41MzEtMjIuODQ0LTIzLjY4OGMtNS44NDQtMTAuMTg4LTguNzgxLTIyLjA2My04Ljc4MS0zNS41NjNjMC0xNy43MTksNS4yNS0zMy42ODgsMTUuNjg4LTQ3Ljg3NSAgIGMxMC40MzgtMTQuMTU2LDI2Ljg3NS0yMi44MTMsNDkuMzEzLTI1Ljk2OVY5NmgzMC4zMTN2MjcuOTY5YzMzLjg3NSw0LjA2Myw1NS44MTMsMjMuMjE5LDY1Ljc4MSw1Ny41bC00MS43NSwxNy4xMjUgICBjLTguMTU2LTIzLjUtMjAuNzItMzUuMjUtMzcuNzgxLTM1LjI1Yy04LjU2MywwLTE1LjQzOCwyLjYyNS0yMC41OTQsNy44NzVjLTUuMTg4LDUuMjUtNy43ODEsMTEuNjI1LTcuNzgxLDE5LjA5NCAgIGMwLDcuNjI1LDIuNSwxMy40NjksNy41LDE3LjU2M2M0Ljk2OSw0LjA2MywxNS42ODgsOS4wOTQsMzIuMDYzLDE1LjEyNWMxOCw2LjU2MywzMi4xMjUsMTIuNzgxLDQyLjM0NCwxOC42MjUgICBjMTAuMjUsNS44NDQsMTguNDA2LDEzLjkzOCwyNC41MzEsMjQuMjE5YzYuMDk0LDEwLjMxMyw5LjE1NSwyMi4zNDUsOS4xNTUsMzYuMTI2QzM0NC43MTksMzIzLjEyNSwzMzguNDA2LDM0MC43NSwzMjUuODEyLDM1NC44NDQgICB6IiBmaWxsPSIjOTFEQzVBIi8+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg==" />
                             {{ result.pending_payout_value }}
@@ -247,10 +277,11 @@
                             &nbsp;<img class="icon-item" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTYuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDM3OC45NCAzNzguOTQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDM3OC45NCAzNzguOTQ7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPGc+Cgk8cGF0aCBkPSJNMzQ4LjE1MSw1NC41MTRjLTE5Ljg4My0xOS44ODQtNDYuMzE1LTMwLjgyNi03NC40MzUtMzAuODI2Yy0yOC4xMjQsMC01NC41NTksMTAuOTQyLTc0LjQ0OSwzMC44MjZsLTkuNzk4LDkuOGwtOS43OTgtOS44ICAgYy0xOS44ODQtMTkuODg0LTQ2LjMyNS0zMC44MjYtNzQuNDQzLTMwLjgyNmMtMjguMTE3LDAtNTQuNTYsMTAuOTQyLTc0LjQ0MiwzMC44MjZjLTQxLjA0OSw0MS4wNTMtNDEuMDQ5LDEwNy44NDgsMCwxNDguODg1ICAgbDE0Ny4wOSwxNDcuMDkxYzIuNDA1LDIuNDE0LDUuMzk5LDMuODkyLDguNTI3LDQuNDYxYzEuMDQ5LDAuMjA3LDIuMTA0LDAuMzAzLDMuMTYxLDAuMzAzYzQuMTYxLDAsOC4zMjktMS41ODcsMTEuNDk4LTQuNzY0ICAgbDE0Ny4wOS0xNDcuMDkxQzM4OS4yMDMsMTYyLjM2MiwzODkuMjAzLDk1LjU2NywzNDguMTUxLDU0LjUxNHogTTMyNS4xNTUsMTgwLjQwNEwxODkuNDcsMzE2LjA5MUw1My43ODIsMTgwLjQwNCAgIGMtMjguMzY4LTI4LjM2NC0yOC4zNjgtNzQuNTE0LDAtMTAyLjg5M2MxMy43NDEtMTMuNzM5LDMyLjAxNy0yMS4yOTYsNTEuNDQ2LTIxLjI5NmMxOS40MzEsMCwzNy43MDIsNy41NTcsNTEuNDM4LDIxLjI5NiAgIGwyMS4zMDUsMjEuMzEyYzYuMTA3LDYuMDk4LDE2Ljg5Nyw2LjA5OCwyMy4wMDMsMGwyMS4yOTctMjEuMzEyYzEzLjczNy0xMy43MzksMzIuMDA5LTIxLjI5Niw1MS40NDYtMjEuMjk2ICAgYzE5LjQzMSwwLDM3LjcwMSw3LjU1Nyw1MS40MzgsMjEuMjk2QzM1My41MjYsMTA1Ljg5LDM1My41MjYsMTUyLjAzOSwzMjUuMTU1LDE4MC40MDR6IiBmaWxsPSIjOTFEQzVBIi8+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg==" />
                             {{ result.net_votes }}
 
+                            &nbsp;<img class="icon-item" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZlcnNpb249IjEuMSIgaWQ9IkNhcGFfMSIgeD0iMHB4IiB5PSIwcHgiIHZpZXdCb3g9IjAgMCA0NjMgNDYzIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA0NjMgNDYzOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4Ij4KPHBhdGggZD0iTTM1Mi4yNzYsNjIuNzYzbDI5LjcyLTUxLjUxNWMxLjMzOS0yLjMyLDEuMzM4LTUuMTgtMC4wMDItNy40OTlDMzgwLjY1NCwxLjQyOSwzNzguMTc5LDAsMzc1LjUsMGgtMTQ0ICBjLTMuMDY2LDAtNS44MjQsMS44NjctNi45NjQsNC43MTVsLTcuOTMsMTkuODI1QzEwOC4zMTEsMzIuMjE1LDI0LDEyMi40MjQsMjQsMjMxLjVjMCw4MC4wNTksNDUuOTE5LDE1Mi42MjcsMTE3LjY2LDE4Ny4wOTMgIGwtMTMuMTYsMzQuMjE1Yy0xLjMxNywzLjQyNiwwLjAzNyw3LjMwMiwzLjIwMiw5LjE2YzEuMTg3LDAuNjk2LDIuNDk2LDEuMDMyLDMuNzk0LDEuMDMyYzIuMTY1LDAsNC4yOTctMC45MzYsNS43NjYtMi42OTggIGwyNi4xNi0zMS4zOTNDMTg4LjA1Niw0MzUuNjAzLDIwOS41OTQsNDM5LDIzMS41LDQzOUMzNDUuOTE2LDQzOSw0MzksMzQ1LjkxNiw0MzksMjMxLjUgIEM0MzksMTY0LjM5Nyw0MDYuNjg2LDEwMS43NTgsMzUyLjI3Niw2Mi43NjN6IE0zNDIuMjkyLDIxMi4zMThjLTEuMjM0LTIuNjM1LTMuODgyLTQuMzE4LTYuNzkyLTQuMzE4aC02Ny4wMTVsNjAuMTUtMTA0LjI2ICBDMzY4LjQyNCwxMzQuMDQ0LDM5MiwxODEuMzE1LDM5MiwyMzEuNUMzOTIsMzIwLDMyMCwzOTIsMjMxLjUsMzkyYy0xMC4zOTMsMC0yMC43My0wLjk5OS0zMC44NDgtMi45NjZsMTQwLjYxLTE2OC43MzIgIEMzNDMuMTI1LDIxOC4wNjUsMzQzLjUyNiwyMTQuOTU0LDM0Mi4yOTIsMjEyLjMxOHogTTIzNi41NzgsMTVoMTI1LjkzN0wyNDkuMDA0LDIxMS43NTJjLTEuMzM5LDIuMzItMS4zMzgsNS4xOCwwLjAwMiw3LjQ5OSAgYzEuMzQsMi4zMiwzLjgxNSwzLjc0OSw2LjQ5NCwzLjc0OWg2My45ODdMMTU5LjQ4OCw0MTQuOTk4Yy0wLjAwMy0wLjI3OC0wLjAyMy0wLjU1NC0wLjA1Ny0wLjgyOEwyMjIuNSwyNTAuMTkyICBjMC44ODctMi4zMDcsMC41ODEtNC45MDEtMC44MTctNi45MzhjLTEuMzk5LTIuMDM3LTMuNzEyLTMuMjU0LTYuMTgzLTMuMjU0aC02OC45MjJMMjM2LjU3OCwxNXogTTEyOS4yODksMjUxLjcwNSAgYzEuMzk2LDIuMDYxLDMuNzIzLDMuMjk1LDYuMjExLDMuMjk1aDY5LjA4bC00NS45NjcsMTE5LjUxMkMxMDUuMTU3LDM0Ny4yMTksNzEsMjkxLjg5MSw3MSwyMzEuNSAgYzAtMzguNTI2LDEzLjg1NC03NS43NzYsMzkuMDEtMTA0Ljg4N2MyMi42MjktMjYuMTg3LDUzLjAzOC00NC4zMjQsODYuNDc5LTUxLjc3OWwtNjcuOTUyLDE2OS44ODEgIEMxMjcuNjEyLDI0Ny4wMjUsMTI3Ljg5NSwyNDkuNjQ0LDEyOS4yODksMjUxLjcwNXogTTM5LDIzMS41YzAtOTguNzIzLDc0LjQ0MS0xODAuNzg3LDE3MS4zNi0xOTEuMzQ0bC03LjI1NiwxOC4xNCAgYy00MC40NDQsNi41ODYtNzcuNDk1LDI3LjMyNC0xMDQuNDQzLDU4LjUwOUM3MS4xNSwxNDguNjQxLDU2LDE4OS4zNzMsNTYsMjMxLjVjMCw2Ni41NjMsMzcuOTM3LDEyNy41MTksOTcuMTk0LDE1Ny4xMDIgIGwtNi4xMjksMTUuOTM2QzgxLjEzNywzNzIuMzUyLDM5LDMwNS4zNjUsMzksMjMxLjV6IE0yMzEuNSw0MjRjLTE4LjI5MSwwLTM2LjI5OS0yLjU1NS01My42NjUtNy41ODdsMTIuMDEtMTQuNDExICBjMTMuNTcsMy4zMDMsMjcuNTY2LDQuOTk4LDQxLjY1NSw0Ljk5OGM5Ni43NzEsMCwxNzUuNS03OC43MjksMTc1LjUtMTc1LjVjMC01NS41MTgtMjYuMzczLTEwNy43ODQtNzAuODA2LTE0MC44NjJsOC41NDUtMTQuODEyICBDMzk0LjQ5MywxMTIuMDYzLDQyNCwxNjkuNzQzLDQyNCwyMzEuNUM0MjQsMzM3LjY0NSwzMzcuNjQ1LDQyNCwyMzEuNSw0MjR6IiBmaWxsPSIjOTFEQzVBIiAvPgo8Zz4KPC9nPgo8L3N2Zz4KCg==" />
+                            {{ result.steem_power }}
+
                             <br><img class="icon-item" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMS4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDQ4Ni45ODIgNDg2Ljk4MiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNDg2Ljk4MiA0ODYuOTgyOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCI+CjxnPgoJPHBhdGggZD0iTTEzMS4zNSw0MjIuOTY5YzE0LjYsMTQuNiwzOC4zLDE0LjYsNTIuOSwwbDE4MS4xLTE4MS4xYzUuMi01LjIsOS4yLTExLjQsMTEuOC0xOGMxOC4yLDUuMSwzNS45LDcuOCw1MS41LDcuNyAgIGMzOC42LTAuMiw1MS40LTE3LjEsNTUuNi0yNy4yYzQuMi0xMCw3LjItMzEtMTkuOS01OC42Yy0wLjMtMC4zLTAuNi0wLjYtMC45LTAuOWMtMTYuOC0xNi44LTQxLjItMzIuMy02OC45LTQzLjggICBjLTUuMS0yLjEtMTAuMi00LTE1LjItNS44di0wLjNjLTAuMy0yMi4yLTE4LjItNDAuMS00MC40LTQwLjRsLTEwOC41LTEuNWMtMTQuNC0wLjItMjguMiw1LjQtMzguMywxNS42bC0xODEuMiwxODEuMSAgIGMtMTQuNiwxNC42LTE0LjYsMzguMywwLDUyLjlMMTMxLjM1LDQyMi45Njl6IE0yNzAuOTUsMTE3Ljg2OWMxMi4xLTEyLjEsMzEuNy0xMi4xLDQzLjgsMGM3LjIsNy4yLDEwLjEsMTcuMSw4LjcsMjYuNCAgIGMxMS45LDguNCwyNi4xLDE2LjIsNDEuMywyMi41YzUuNCwyLjIsMTAuNiw0LjIsMTUuNiw1LjlsLTAuNi00My42YzAuOSwwLjQsMS43LDAuNywyLjYsMS4xYzIzLjcsOS45LDQ1LDIzLjMsNTguNywzNyAgIGMwLjIsMC4yLDAuNCwwLjQsMC42LDAuNmMxMywxMy4zLDE0LjQsMjEuOCwxMy4zLDI0LjRjLTMuNCw4LjEtMzkuOSwxNS4zLTk1LjMtNy44Yy0xNi4yLTYuOC0zMS40LTE1LjItNDMuNy0yNC4zICAgYy0wLjQsMC41LTAuOSwxLTEuMywxLjVjLTEyLjEsMTIuMS0zMS43LDEyLjEtNDMuOCwwQzI1OC44NSwxNDkuNTY5LDI1OC44NSwxMjkuOTY5LDI3MC45NSwxMTcuODY5eiIgZmlsbD0iIzkxREM1QSIvPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" />
                             {{ result.tags.join(', ') }}
-
-
                         </p>
                     </div>
                 </item>
@@ -259,8 +290,20 @@
 
             <div id="main"
               class="pure-u"
-              :class="{'main-collapsed': filterMenuCollapsed, 'main-modal': showMobilePostPreview}"
+              :class="{'main-collapsed': filterMenuCollapsed, 'main-modal': showMobilePostPreview, 'preview-collapsed': previewCollapsed}"
               @click="scrollTopList(showArticle.permlink)">
+                <button
+                  class="primary-button pure-button collapse-btn preview-collapsed-btn"
+                  @click="toggleCollapsePreview">
+                  <div style="display: block; marign: 0 auto;" class="collapse-btn-child">
+                      <span v-show="previewCollapsed">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 24 24" width="24" height="24"><defs><clipPath id="_clipPath_v1XZEi6sRMReNRt4JmibeQUvbDA9kH7c"><rect width="24" height="24"/></clipPath></defs><g clip-path="url(#_clipPath_v1XZEi6sRMReNRt4JmibeQUvbDA9kH7c)"><path d=" M 11 5 L 4 12 L 11 19" fill-rule="evenodd" fill="none" vector-effect="non-scaling-stroke" stroke-width="2" stroke="rgb(255,255,255)" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4"/></g></svg>
+                      </span>
+                      <span v-show="!previewCollapsed">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 24 24" width="24" height="24"><defs><clipPath id="_clipPath_3MTA8wqwPkVSN5h1q6XiXxvpxaNsJ52i"><rect width="24" height="24"/></clipPath></defs><g clip-path="url(#_clipPath_3MTA8wqwPkVSN5h1q6XiXxvpxaNsJ52i)"><clipPath id="_clipPath_FFqARoG3YpBUCeh1ceqwiyB0wzN6ZyUD"><rect x="0" y="0" width="24" height="24" transform="matrix(1,0,0,1,0,0)" fill="rgb(255,255,255)"/></clipPath><g clip-path="url(#_clipPath_FFqARoG3YpBUCeh1ceqwiyB0wzN6ZyUD)"><g id="Group"><path d=" M 4 5 L 11 12 L 4 19" fill-rule="evenodd" fill="none" vector-effect="non-scaling-stroke" stroke-width="2" stroke="rgb(255,255,255)" stroke-opacity="100" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="4"/></g></g></g></svg>
+                      </span>
+                    </div>
+                </button>
                 <button class="secondary-button pure-button close-main-btn most-right"
                   @click="closeMobilePreview"
                 >Close</button>
@@ -272,12 +315,12 @@
                         <div class="pure-u-3-4">
                             <h1 class="email-content-title">{{ showArticle.title }}</h1>
                             <p class="email-content-subtitle">
-                                Created by <a target="_blank" :href="`https://steemit.com/@${showArticle.author}`">{{ showArticle.author }}</a><br />at <span>{{ showArticle.created }}</span>
+                                Created by <a target="_blank" :href="`https://${externalFe}/@${showArticle.author}`">{{ showArticle.author }}</a><br />at <span>{{ showArticle.created }}</span> <span style="float: right;">Steem Power: {{ showArticle.steem_power }}</span>
                             </p>
                         </div>
 
                         <div class="email-content-controls pure-u-1-4">
-                            <a target="_blank" :href="`https://steemit.com/@${showArticle.permlink}`" class="secondary-button pure-button">Open</a>
+                            <a target="_blank" :href="`https://${externalFe}${externalFe === 'steemdb.com' ? '/steemit' : ''}/@${showArticle.permlink}`" class="secondary-button pure-button">Open</a>
                         </div>
                     </div>
 
@@ -398,21 +441,6 @@ import cloneDeep from "lodash.clonedeep";
 import VueMarkdown from 'vue-markdown' // production
 import virtualList from 'vue-virtual-scroll-list'
 const supportedLanguages = require("./supportedLanguages.js");
-const getAccessCode = () => {
-  try {
-    return localStorage.getItem("queryAccessCode");
-  } catch (e) {
-    console.log("getAccessCode error", e);
-  }
-};
-
-const setAccessCode = access_code => {
-  try {
-    localStorage.setItem("queryAccessCode", access_code);
-  } catch (e) {
-    console.log("setAccessCode error", e);
-  }
-};
 
 export default {
   /** The name of the application. */
@@ -423,12 +451,11 @@ export default {
   },
   data() {
     return {
-      noAccessCode: false,
+      externalFe: 'steemit.com',
+      nightMode: null,
       loading: false,
       supportedLanguages: supportedLanguages(),
       activeMenu: "",
-      calendarActive:
-        document.querySelectorAll(".vdatetime-overlay").length === 1,
       activePreview: null,
       lastSelectedPostIndex: 0,
       virtualListItemSize: 120,
@@ -439,7 +466,6 @@ export default {
       showArticle: {},
       savedSearches: [],
       showSaveSearchModal: false,
-      //minutesSlider: [0, 1440],
       // query
       queryTagsInclude: "",
       queryTagsExclude: "",
@@ -454,22 +480,22 @@ export default {
       queryCommentCountMax: "",
       queryVoteCountMin: "",
       queryVoteCountMax: "",
+      querySteemPowerMin: "",
+      querySteemPowerMax: "",
       queryPendingPayoutMin: "",
       queryPendingPayoutMax: "",
-      //   queryStartDate: "",
-      //   queryEndDate: "",
       tagsIncludeType: "any",
       tagsExcludeType: "any",
       queryTitleContains: "",
       queryBodyContains: "",
+      queryTitleNotContains: "",
+      queryBodyNotContains: "",
       queryMinutesAgoStart: 1440, // now - 24h
       queryMinutesAgoEnd: 0, // now
       queryLanguage: "",
       queryExcludeMackbot: false,
       queryMinutesAgoStartFormatted: "",
       queryMinutesAgoEndFormatted: "",
-      queryAccessCode: "johnnyb",
-
       selectedSearch: '',
       showMyMackbotListModal: false,
       queryExcludeMyMackbot: false,
@@ -490,7 +516,8 @@ export default {
       showSaveSearchModal: false,
       newSearchName: '',
       searchNameAlreadyInUse: false,
-      showUpdateSearchModal: false
+      showUpdateSearchModal: false,
+      previewCollapsed: false
     };
   },
   created() {
@@ -502,7 +529,6 @@ export default {
     // console.log(Math.floor(y / 7));
     this.virtualListItemSize = Math.floor(y/7);
 
-    this.queryAccessCode = getAccessCode() || "johnnyb";
     // fetch the data when the view is created and the data is already being observed
     this.fetchData();
     setInterval(() => {
@@ -541,6 +567,10 @@ export default {
         console.warn("cant load saved mackbot list");
       }
     }
+
+    if (window.theme) {
+      this.nightMode = window.theme === 'night-theme';
+    }
   },
 
   updated() {
@@ -554,16 +584,16 @@ export default {
     } catch (e) {
       window.steem_lookup_errors.push("cant update time range");
     }
+    const theme = this.nightMode ? 'night-theme' : 'day-theme';
+    if (window.theme !== theme) {
+      window.theme = theme;
+      window.dispatchEvent(new Event('change-theme'));
+    }
   },
   watch: {
     $route: "fetchData" // call again the method if the route changes
   },
   methods: {
-    submitAccessToken() {
-      setAccessCode(this.queryAccessCode);
-      this.fetchData();
-    },
-
     updateOnBlur() {
       this.fetchData();
     },
@@ -592,17 +622,20 @@ export default {
           "queryCommentCountMax",
           "queryVoteCountMin",
           "queryVoteCountMax",
+          "querySteemPowerMin",
+          "querySteemPowerMax",
           "queryPendingPayoutMin",
           "queryPendingPayoutMax",
           "tagsIncludeType",
           "tagsExcludeType",
           "queryTitleContains",
           "queryBodyContains",
+          "queryTitleNotContains",
+          "queryBodyNotContains",
           "queryMinutesAgoStart",
           "queryMinutesAgoEnd",
           "queryLanguage",
           "queryExcludeMackbot",
-          "queryAccessCode",
           "queryExcludeMyMackbot",
           "myMackbotList",
           "queryNumOfPostsToShow",
@@ -622,7 +655,6 @@ export default {
             window.queryAlreadyInProgress = false;
             this.loading = false;
             if (response.data.totalResults > 0) {
-              this.noAccessCode = false;
               this.dataReady = response.data.results;
               this.totalResults = response.data.totalResults;
               if (!params.noLoading) {
@@ -646,8 +678,6 @@ export default {
               } else {
                 this.isLoggedIn = false
               }
-            } else if (response.data.error === "ACCESS_DENIED") {
-              this.noAccessCode = true;
             } else {
               this.dataReady = [
                 {
@@ -660,9 +690,11 @@ export default {
                   net_votes: 0,
                   pending_payout_value: 0,
                   permlink: "",
-                  tags: [""],
+                  tags: ["needle in a haystack"],
                   title: "No results found matching your search criteria",
-                  wordCount: 0
+                  wordCount: 0,
+                  thumbnails: [],
+                  steem_power: 0
                 }
               ];
               // this.error = { message: "No data matches your criteria" };
@@ -829,7 +861,6 @@ export default {
       console.log('clicked update search')
     },
     updateShowArticle(index, hideOnMobile) {
-      // sakrij otvaranje prvog post-a nakon seach update-a
       if(hideOnMobile) {
         this.showMobilePostPreview = false
       } else {
@@ -894,22 +925,15 @@ export default {
       this.error = null;
       location.reload();
     },
-    verifyActiveStates() {
-      this.calendarActive =
-        document.querySelectorAll(".vdatetime-overlay").length === 1;
-      // this.updateDataFromSlider();
-    },
     scrollTopList(permlink) {
       let activePost = this.dataReady.find((element, index) => element.permlink === permlink)
       if(activePost !== undefined) {
-        // hack - virtual list dozvoljava scroll to samo na promenu :start vrednosti,
-        // svaki sledeci klik nema efekta
         this.lastSelectedPostIndex = this.dataReady.indexOf(activePost) + 1
         this.$nextTick(() => {
           this.lastSelectedPostIndex = this.dataReady.indexOf(activePost)
         })
       } else {
-        // TODO: post nije vise u rezultatima
+        // TODO: post not in results anymore
       }
     },
     openMyMackbotListModal () {
@@ -948,7 +972,7 @@ export default {
       } else {
         axios.post(`/update-custom-user-list`, {customUserList: JSON.stringify(this.myMackbotList)})
           .then(response => {
-            alert(`Cutom list was successfully updated.`)
+            alert(`Custom list was successfully updated.`)
           })
           .catch(error => {
             this.error = { message: `Can't update custom list.` };
@@ -966,27 +990,10 @@ export default {
     },
     updateRemoteCustomeExclList () {
       console.log('remote exclude list')
+    },
+    toggleCollapsePreview () {
+      this.previewCollapsed = !this.previewCollapsed
     }
-    // updateDataFromSlider() {
-    //   try {
-    //     this.queryMinutesAgoStart = this.minutesSlider[1];
-    //     this.queryMinutesAgoEnd = this.minutesSlider[0];
-    //     this.queryMinutesAgoStartFormatted = Date.parse("now")
-    //       .add({ minutes: -this.queryMinutesAgoStart })
-    //       .toString("MMM d yyyy HH:mm");
-    //     this.queryMinutesAgoEndFormatted = Date.parse("now")
-    //       .add({ minutes: -this.queryMinutesAgoEnd })
-    //       .toString("MMM d yyyy HH:mm");
-    //   } catch (e) {
-    //     window.steem_lookup_errors.push("cant update slider range");
-    //   }
-    // }
-  },
-
-  /** Fires when the app has been mounted. */
-  mounted() {
-    // If the user is authenticated, fetch the data from the API
-    setInterval(this.verifyActiveStates, 1000);
   }
 };
 </script>

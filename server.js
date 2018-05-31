@@ -21,13 +21,24 @@ pg.types.setTypeParser(1114, function(stringValue) {
     return new Date(Date.parse(stringValue + "+0000"));
 });
 const pgdb = new Pool({
-    user: 'steem_lookup_user',
+    user: process.env.PSQL_USER || 'steem_lookup_user',
     host: process.env.PSQL_HOST || '127.0.0.1',
-    database: process.env.NODE_ENV === 'production' ? 'steem_lookup_v2' : 'steem_lookup_v2_dev',
+    database: process.env.PSQL_DB || 'steem_lookup_v4',
     password: process.env.PSQL_PASS,
-    port: 5432
+    port: process.env.PSQL_PORT || 5432
+});
+const pgdb_slave = new Pool({
+    user: process.env.PSQL_USER || 'steem_lookup_user',
+    host: process.env.PSQL_SLAVE_HOST || process.env.PSQL_HOST || '127.0.0.1',
+    database: process.env.PSQL_DB || 'steem_lookup_v4',
+    password: process.env.PSQL_PASS,
+    port: process.env.PSQL_PORT || 5432
 });
 global.pgdb = pgdb;
+global.pgdb_slave = pgdb_slave;
+const Redis = require('./utils/redis.js')
+const redis = new Redis(process.env.REDIS_HOST, process.env.REDIS_PASS);
+global.redis = redis;
 
 const middlewares = require('./middlewares');
 global.timer = require('./utils/timer.js');
@@ -65,7 +76,9 @@ fixCssPaths({
 });
 
 global.App = {
-    MackBot: []
+    MackBot: [],
+    permlinks: [],
+    vests2Sp: 0.000491809
 };
 
 global.pgdb.query(`select permlink from steem_posts where created >= NOW() - INTERVAL '600 minutes';`, (err, results) => {
@@ -79,10 +92,12 @@ app.listen(appConfig.port, function () {
 
 // Timers logic
 const pullData = require('./app/pull-data.js');
+const pullUser = require('./app/pull-user.js');
 const refreshMackbot = require('./app/refresh-mackbot-list.js');
 if (process.env.PULL_DATA !== 'false') {
     pullData();
     setInterval(() => pullData(), appConfig.intervals['pull-data']);
+    setInterval(() => pullUser(), appConfig.intervals['pull-user']);
 }
 
 refreshMackbot();

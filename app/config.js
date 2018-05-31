@@ -5,5 +5,6 @@ module.exports = {
     intervals: {
         'pull-data': 20000, // 20 sec
         'refresh-mackbot-list': 15*60000, // 15 min
+        'pull-user': 500
     }
 }

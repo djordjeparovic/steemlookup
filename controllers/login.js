@@ -15,7 +15,7 @@ module.exports = (req, res) => {
         const email = req.body.email.slice(0, 100).replace(`'`, '').trim();
         const password = sha256(req.body.password);
 
-        global.pgdb.query(`select token from lookup_user where email = '${email}' and password = '${password}'`, (err, result) => {
+        global.pgdb_slave.query(`select token from lookup_user where email = '${email}' and password = '${password}'`, (err, result) => {
             if (err) {
                 logger.error(err, `reqId:${req.reqId}`);
                 res.statusCode = 503;
@@ -44,7 +44,7 @@ module.exports = (req, res) => {
             }
         });
     } catch (e) {
-        logger.error(e.message || e, `reqId:${req.reqId}`);
+        logger.error(e && e.message, e && e.stack, `reqId:${req.reqId}`);
         logger.debug(`Request took ${((new Date()) - req.startTime)/1000} seconds`, `reqId:${req.reqId}`);
         res.json({
             status: 'fail',

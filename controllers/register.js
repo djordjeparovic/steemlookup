@@ -33,7 +33,7 @@ module.exports = (req, res) => {
             }
         });
     } catch (e) {
-        logger.error(e.message || e, `reqId:${req.reqId}`);
+        logger.error(e && e.message, e && e.stack, `reqId:${req.reqId}`);
         logger.debug(`Request took ${((new Date()) - req.startTime)/1000} seconds`, `reqId:${req.reqId}`);
         res.json({
             status: 'fail',

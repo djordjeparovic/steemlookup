@@ -1,6 +1,6 @@
 {
   "name": "steemlookup",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Steemit filtering tool by Curies",
   "main": "server.js",
   "scripts": {
@@ -40,10 +40,12 @@
     "pg": "^7.4.1",
     "postcss-loader": "2.0.10",
     "random-string": "^0.2.0",
+    "redis": "^2.8.0",
     "sha256": "^0.2.0",
     "steem": "0.7.1",
     "style-loader": "0.20.1",
     "tracer": "0.8.11",
+    "util": "^0.10.3",
     "vue": "2.5.13",
     "vue-loader": "13.7.0",
     "vue-markdown": "^2.2.4",

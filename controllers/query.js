@@ -18,11 +18,12 @@ function parseInteger(value, defaultValue) {
 }
 
 module.exports = (req, res) => {
-    // body not included
-    let queryStr = `SELECT
-        permlink, author, title, body, author_reputation, 
+    let queryStr = `
+    SELECT * from (
+    SELECT
+        permlink, author, title, body, author_reputation,
         created, last_visited, last_payout, tags, imageCount, wordCount, 
-        children, active_votes, net_votes, pending_payout_value FROM steem_posts 
+        children, active_votes, net_votes, pending_payout_value, thumbnails FROM steem_posts
         WHERE `;
     let queryDbParams = [];
     let page = 1;
@@ -82,11 +83,11 @@ module.exports = (req, res) => {
     }
 
     if (req.body.queryMinutesAgoStart) {
-        let minutesAgoStart = ('' + req.body.queryMinutesAgoStart).slice(0, 4).replace(/[^\d]/g, '')
+        let minutesAgoStart = ('' + req.body.queryMinutesAgoStart).replace(/[^\d]/g, '')
         queryDbParams.push(`created >= NOW() - INTERVAL '${minutesAgoStart} minutes'`);
     }
     if (req.body.queryMinutesAgoEnd) {
-        let minutesAgoEnd = ('' + req.body.queryMinutesAgoEnd).slice(0, 4).replace(/[^\d]/g, '')
+        let minutesAgoEnd = ('' + req.body.queryMinutesAgoEnd).replace(/[^\d]/g, '')
         queryDbParams.push(`created <= NOW() - INTERVAL '${minutesAgoEnd} minutes'`);
     }
 
@@ -109,6 +110,28 @@ module.exports = (req, res) => {
             .join(' or ')
         queryDbParams.push(
             queryBodyContains
+        );
+    }
+
+    if(req.body.queryTitleNotContains) {
+        let queryTitleNotContains = req.body.queryTitleNotContains
+        queryTitleNotContains = queryTitleNotContains
+            .split(',')
+            .map(q => `title !~* '\\m${q.trim()}\\M'`)
+            .join(' or ')
+        queryDbParams.push(
+            queryTitleNotContains
+        );
+    }
+
+    if(req.body.queryBodyNotContains) {
+        let queryBodyNotContains =  req.body.queryBodyNotContains
+        queryBodyNotContains = queryBodyNotContains
+            .split(',')
+            .map(q => `body !~* '\\m${q.trim()}\\M'`)
+            .join(' or ')
+        queryDbParams.push(
+            queryBodyNotContains
         );
     }
 
@@ -155,18 +178,14 @@ module.exports = (req, res) => {
         }
     }
 
-    queryStr += ` ${queryDbParams.join(' AND ')} ORDER BY ${sortBy} ${sortType};`; // TODO LIMIT 100 afater tags fix
-    // if low criteria present return just 1000 from db
-    // if (queryDbParams.length < 3) {
-    //     queryStr += ' LIMIT 1000;'
-    // } else {
-    //     queryStr += ';'
-    // }
-    // let lowCiteria = Object.keys(req.body).map(k => req.body[k]).join('').length < 19; // page and radio buttons in body
+    queryStr += ` ${queryDbParams.join(' AND ')} 
+    ORDER BY ${sortBy} ${sortType}) AS posts
+    LEFT JOIN (SELECT name, vesting_shares FROM steem_user) as suh
+    ON posts.author = suh.name;`;
 
     logger.debug(JSON.stringify(queryStr).replace(/\\n/g, '').replace(/\s+/g, ' '), `reqId:${req.reqId}`);
     const dbTime = new Date();
-    global.pgdb.query(queryStr, (err, result) => {
+    global.pgdb_slave.query(queryStr, (err, result) => {
         logger.debug(`DB time: ${((new Date()) - dbTime)/1000} seconds`, `reqId:${req.reqId}`);
         if (err) {
             logger.error(err, `reqId:${req.reqId}`);
@@ -180,23 +199,14 @@ module.exports = (req, res) => {
         }
 
         let resultsTmp = result.rows.map(r => {
-            let postThumbnail = null
-            let exp = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))/ig;
-            let foundUrls = r.body.match(exp)
-            if(foundUrls) {
-                postThumbnail = [foundUrls[0], foundUrls[1]]
-            }
-
-            if(postThumbnail === null) {
-                postThumbnail = [`https://steemitimages.com/u/${r.author}/avatar`]
-            }
-
             return {
                 title: r.title,
                 author: r.author,
-                thumbnails: postThumbnail,
+                thumbnails: (r.thumbnails + '').split('| |'),
                 permlink: r.permlink,
                 author_reputation: r.author_reputation,
+                vesting_shares: r.vesting_shares,
+                steem_power: Math.floor(r.vesting_shares*global.App.vests2Sp).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','),
                 created: r.created,
                 tags: r.tags && r.tags.split('|') || [],
                 imageCount: r.imagecount,
@@ -207,6 +217,18 @@ module.exports = (req, res) => {
                 minutes_ago: time_ago(r.created, new Date())
             }
         });
+
+        if (req.body.querySteemPowerMin) {
+            resultsTmp = resultsTmp.filter(r => {
+                return r.vesting_shares && r.vesting_shares*global.App.vests2Sp >= req.body.querySteemPowerMin;
+            })
+        }
+
+        if (req.body.querySteemPowerMax) {
+            resultsTmp = resultsTmp.filter(r => {
+                return r.vesting_shares && r.vesting_shares*global.App.vests2Sp <= req.body.querySteemPowerMax;
+            })
+        }
 
         // TODO - MOVE THIS OUT AND FILTER USING PSQL
         if (req.body.queryTagsInclude) {

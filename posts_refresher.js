@@ -1,27 +1,13 @@
 'use strict';
 const async = require('async');
 const steem = require('steem');
+steem.api.setOptions({ url: process.env.STEEM_API_URL || 'https://api.steemit.com' });
 const normalizePost = require('./app/normalize-post.js');
 
 global.logger = require('tracer').colorConsole({ // .console({
     format : "{{timestamp}} [{{title}}] {{message}}",
-    dateformat : "d mmm yy HH:MM:ss"
+    dateformat : "HH:MM:ss"
 });
-
-const ex = (code) => {
-    logger.error('Code: ', code);
-    process.exit(code);
-}
-
-process.on('uncaughtException', (err) => {
-    logger.error(`Caught exception: ${err && err.message};${err}\n`);
-    ex(2);
-});
-
-// it must finish in 40 minutes
-setTimeout(() => {
-    ex(4);
-}, 40*60*1000);
 
 global.timer = require('./utils/timer.js');
 
@@ -35,13 +21,21 @@ pg.types.setTypeParser(1114, function(stringValue) {
 });
 
 const pgdb = new Pool({
-    user: 'steem_lookup_user',
+    user: process.env.PSQL_USER || 'steem_lookup_user',
     host: process.env.PSQL_HOST || '127.0.0.1',
-    database: process.env.NODE_ENV === 'production' ? 'steem_lookup_v2' : 'steem_lookup_v2_dev',
+    database: process.env.PSQL_DB || 'steem_lookup_v4',
     password: process.env.PSQL_PASS,
-    port: 5432
+    port: process.env.PSQL_PORT || 5432
+});
+const pgdb_slave = new Pool({
+    user: process.env.PSQL_USER || 'steem_lookup_user',
+    host: process.env.PSQL_SLAVE_HOST || process.env.PSQL_HOST || '127.0.0.1',
+    database: process.env.PSQL_DB || 'steem_lookup_v4',
+    password: process.env.PSQL_PASS,
+    port: process.env.PSQL_PORT || 5432
 });
 global.pgdb = pgdb;
+global.pgdb_slave = pgdb_slave;
 
 timer.start('posts-refresher');
 
@@ -52,19 +46,14 @@ let queryStr = `SELECT
         WHERE created >= NOW() - INTERVAL '${process.env.MINUTES_END} minutes' 
         AND created <= NOW() - INTERVAL '${process.env.MINUTES_START} minutes'`;
 
-global.pgdb.query(queryStr, (err, pgresult) => {
+global.pgdb_slave.query(queryStr, (err, pgresult) => {
     if (err) {
         logger.error(err);
-        ex(3);
+        return;
     }
     async.eachSeries(pgresult.rows, (post, cb) => {
         const author = post.author;
         const link = post.permlink.split('/')[1];
-        if (author === '' || link === '') {
-            logger.warn('Bad post', post);
-            cb(null, {});
-            return;
-        }
         steem.api.getContent(author, link, function(err, post) {
             let getContentNormalizeError = false;
             if (err) {
@@ -76,7 +65,7 @@ global.pgdb.query(queryStr, (err, pgresult) => {
             try {
                 dbPost = normalizePost(post);
             } catch (e) {
-                logger.error('normalizePost error', e, post);
+                logger.error('normalizePost error', e && e.message, e && e.stack, post);
                 getContentNormalizeError = true;
             }
 
@@ -130,10 +119,9 @@ global.pgdb.query(queryStr, (err, pgresult) => {
     }, (err, asyncData) => {
         if (err) {
             logger.error(err);
-            ex(2);
         } else {
             logger.info(`All OK. Job took ${timer.end('posts-refresher')}ms`);
-            ex(1);
+            process.exit(1);
         }
     });
 });

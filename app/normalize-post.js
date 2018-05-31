@@ -6,6 +6,10 @@ let decode = require('decode-html');
 module.exports = (o) => {
     let currentTime = new Date();
 
+    if (!o.author) {
+        throw new Error('Missing author');
+    }
+
     let permlink = `${o.author}/${o.permlink}`;
     let author = o.author;
     let title = o.title.slice(0, 499);
@@ -17,26 +21,27 @@ module.exports = (o) => {
     let tags = '';
     let format = 'html';
     let imageCount = 0;
-    try {
-        if (JSON.parse(o.json_metadata).tags instanceof Array) {
-            let metadata = JSON.parse(o.json_metadata);
-            tags = metadata.tags.sort().join('|').slice(0, 499);
-            format = metadata.format;
-    
-            if (metadata.image instanceof Array) {
-                imageCount = metadata.image.length;
-            }
-        }
-    } catch (e) {
-        logger.error(e && e.message, 'for', permlink, 'JSON to parse', o && o.json_metadata);
-    }
-    
+    if (JSON.parse(o.json_metadata).tags instanceof Array) {
+        let metadata = JSON.parse(o.json_metadata);
+        tags = metadata.tags.sort().join('|').slice(0, 499);
+        format = metadata.format;
 
-    // const images = o.body.match(/(\.jpg)|(\.jpeg)|(\.gif)|(\.png)|(\.JPG)|(\.JPEG)|(\.GIF)|(\.PNG)/g);
-    // if (images) {
-    //     logger.info('CONTROL imageCount', imageCount, images.length);
-    //     imageCount = images.length;
-    // }
+        if (metadata.image instanceof Array) {
+            imageCount = metadata.image.length;
+        }
+    }
+
+    let postThumbnail = null
+    let exp = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))/ig;
+    let foundUrls = o.body.match(exp)
+    if(foundUrls) {
+        postThumbnail = [foundUrls[0], foundUrls[1]]
+    }
+
+    if(postThumbnail === null) {
+        postThumbnail = [`https://steemitimages.com/u/${o.author}/avatar`]
+    }
+    let thumbnails = postThumbnail.join('| |');
 
     let pureBody = o.body.replace(/!\[image\]\([^)]+\)/g, '')
         .replace(/\n/g, '')
@@ -97,6 +102,7 @@ module.exports = (o) => {
         active_votes,
         net_votes,
         pending_payout_value,
-        lang
+        lang,
+        thumbnails
     }
 };

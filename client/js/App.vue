@@ -1,13 +1,11 @@
 <template>
-  <div>
+  <div :class="[{'day-theme': theme === 'day-theme'}]">
     <div class="header-track">
       <span>Discovering exceptional content.</span>
       <router-link v-if="!userLoggedIn" to="/login">Login</router-link>
       <a v-if="userLoggedIn" href="#" @click="logout">Logout</a>
       <a href="/help">Help</a>
     </div>
-    <!-- <router-link to="/">Go go Search</router-link>
-    <router-link to="/login">Go go Login</router-link> -->
     <router-view></router-view>
   </div>
 </template>
@@ -18,7 +16,8 @@ export default {
   name: "SteemSearchEngine",
   data () {
     return {
-      userLoggedIn: false
+      userLoggedIn: false,
+      theme: ''
     }
   },
   created () {
@@ -30,8 +29,30 @@ export default {
     } catch (e) {
       console.log(e)
     }
+
+    try {
+      const theme = localStorage.getItem('user-theme')
+      if (theme) {
+        this.theme = theme;
+        window.theme = theme;
+      } else {
+        this.theme = 'night-theme';
+        window.theme = this.theme;
+      }
+    } catch (e) {
+      console.log(e);
+    }
+
+    window.addEventListener('change-theme', () => {
+      this.theme = window.theme;
+      try {
+        localStorage.setItem('user-theme', window.theme);
+      } catch (e) {
+        console.log(e);
+      }
+    });
   },
-  updated () {
+  updated () { // todo event-bus
     this.userLoggedIn =  !!window.userLoggedIn;
   },
   methods: {

@@ -2,7 +2,7 @@
     "routes": [
         {
             "path": "/healthcheck",
-            "method": "post",
+            "method": "get",
             "controller": "healthcheck.js"
         },
         {

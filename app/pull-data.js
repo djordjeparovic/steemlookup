@@ -1,4 +1,5 @@
 const steem = require('steem');
+steem.api.setOptions({ url: process.env.STEEM_API_URL || 'https://api.steemit.com' });
 const async = require('async');
 const normalizePost = require('./normalize-post.js');
 
@@ -19,7 +20,14 @@ module.exports = () => {
         async.eachSeries(results.filter(r => {
             return global.App.permlinks.indexOf(`${r.author}/${r.permlink}`) === -1;
         }), (post, cb) => {
-            const dbPost = normalizePost(post);
+            let dbPost;
+            try {
+                dbPost = normalizePost(post);
+            } catch (e) {
+                logger.error('normalizePost error', e && e.message, e && e.stack);
+                cb(e);
+                return null;
+            }
 
             const pgQuery = {
                 text: `INSERT INTO steem_posts(
@@ -38,7 +46,8 @@ module.exports = () => {
                     active_votes,
                     net_votes,
                     pending_payout_value,
-                    lang) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+                    lang,
+                    thumbnails) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
                 values: [
                     dbPost.permlink,
                     dbPost.author,
@@ -55,12 +64,16 @@ module.exports = () => {
                     dbPost.active_votes,
                     dbPost.net_votes,
                     dbPost.pending_payout_value,
-                    dbPost.lang
+                    dbPost.lang,
+                    dbPost.thumbnails
                 ]
             };
 
             global.App.permlinks.push(dbPost.permlink);
-            global.pgdb.query(pgQuery)
+            global.redis.lpush('steem-users-update-que', dbPost.author)
+            .then(rs => {
+                return global.pgdb.query(pgQuery)
+            })
             .then(res => {
                 cb(null, res);
             })
