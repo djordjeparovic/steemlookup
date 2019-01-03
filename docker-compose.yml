@@ -1,0 +1,100 @@
+
+version: '2.1'
+services:
+  app:
+    build: ./
+    restart: always
+    command: node server.js
+    volumes:
+      - ./:/home/node/app/
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    links:
+      - postgres:postgres
+      - redis:redis
+    environment:
+      PSQL_DB: "${PGDATABASE}"
+      PSQL_HOST: "${PGHOST}"
+      PSQL_SLAVE_HOST: "${PGHOST}"
+      PSQL_PASS: "${PGPASSWORD}"
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PASS: "${REDIS_PASS}"
+      NODE_ENV: production
+      PORT: ${APP_PORT}
+      PULL_DATA: "true"
+      WORKER_ID: "1"
+  
+  posts_refresher_1:
+    build: ./
+    restart: always
+    command: node posts_refresher.js
+    depends_on:
+      - app
+    links:
+      - postgres:postgres
+      - redis:redis
+    environment:
+      PSQL_DB: "${PGDATABASE}"
+      PSQL_HOST: "${PGHOST}"
+      PSQL_SLAVE_HOST: "${PGHOST}"
+      PSQL_PASS: "${PGPASSWORD}"
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PASS: "${REDIS_PASS}"
+      NODE_ENV: production
+      MINUTES_START: 0
+      MINUTES_END: 20
+
+  posts_refresher_2:
+    build: ./
+    restart: always
+    command: node posts_refresher.js
+    depends_on:
+      - app
+    links:
+      - postgres:postgres
+      - redis:redis
+    environment:
+      PSQL_DB: "${PGDATABASE}"
+      PSQL_HOST: "${PGHOST}"
+      PSQL_SLAVE_HOST: "${PGHOST}"
+      PSQL_PASS: "${PGPASSWORD}"
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PASS: "${REDIS_PASS}"
+      NODE_ENV: production
+      MINUTES_START: 21
+      MINUTES_END: 40
+
+  postgres:
+    image: postgres:11.1-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: "${PGDATABASE}"
+      POSTGRES_USER: "${PGUSER}"
+      POSTGRES_PASSWORD: "${PGPASSWORD}"
+    ports:
+      - "${PGPORT}:${PGPORT}"
+    volumes:
+        - "./postgres_data:/var/lib/postgresql/data"
+    healthcheck:
+        test: ["CMD", "nc", "-z", "127.0.0.1", "5432"]
+        interval: 1s
+        timeout: 30s
+        retries: 30
+
+  redis:
+    image: redis:5.0-alpine
+    restart: always
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - "./redis_data:/data:rw"
+    healthcheck:
+        test: ["CMD", "nc", "-z", "127.0.0.1", "6379"]
+        interval: 2s
+        timeout: 60s
+        retries: 30
