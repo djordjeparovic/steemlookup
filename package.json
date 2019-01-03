@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npm run build",
-    "build": "webpack --env.env=prod",
+    "build": "./node_modules/webpack/bin/webpack.js --env.env=prod",
     "watch": "webpack --env.env=dev --watch",
     "nodemon": "nodemon --inspect server.js --ext js,json,jsx --ignore node_modules/ --ignore tests/ --ignore build/ --ignore 'app/client/**/*.js$'",
     "todo": "git grep -n '// TODO' -- './' ':!package.json' | sed 's/\\(.*:\\)\\([0-9]*\\):.*\\(\\/\\/ TODO.*\\)/\\1\\2 ==> \\3/' > TODO.md"

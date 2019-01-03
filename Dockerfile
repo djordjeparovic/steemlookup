@@ -9,8 +9,10 @@ RUN apk add --no-cache \
     lcms2-dev \
     bash
 COPY ./package* ./
-RUN npm install --production && \
+
+RUN npm install && \
     npm cache clean --force
+RUN npm run build
 
 COPY . .
 

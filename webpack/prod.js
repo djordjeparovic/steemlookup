@@ -37,10 +37,10 @@ const config = env => ({
                     {
                         loader: 'babel-loader',
                         query: {
-                            presets: ['es2015'],
+                            presets: [require.resolve('babel-preset-es2015')],
                             plugins: [
-                                'transform-async-to-generator',
-                                'transform-object-assign'
+                                require.resolve('babel-plugin-transform-async-to-generator'),
+                                require.resolve('babel-plugin-transform-object-assign')
                             ]//.map(require.resolve)
                         }
                     }
