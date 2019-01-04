@@ -8,12 +8,12 @@ RUN apk add --no-cache \
     libpng-dev \
     lcms2-dev \
     bash
-COPY ./package* ./
-
-RUN npm install && \
-    npm cache clean --force
-RUN npm run build
 
 COPY . .
 
+RUN npm install
+
+RUN npm run build
+
 EXPOSE ${PORT}
+
